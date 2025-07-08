@@ -31,6 +31,7 @@ namespace FinalProject
         // '-' = platform, 'z' = moving platform, 'x' = spike/trap, ' ' = empty space
         private string _sceneLayout;
 
+
         // Scene object fields
         Sprite _background;      // The background image
         Sprite[] _platform;      // Array of all platforms and traps in the scene
