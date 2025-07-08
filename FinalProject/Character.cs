@@ -79,10 +79,7 @@ namespace FinalProject
         // It handles hurt state, movement, and checks if the character should die.
         public virtual void Update(Sprite[] _platform, GameTime gameTime)
         {
-            HandleHurtState(gameTime); // Check if the character is hurt.
-            ChangePosition(_platform); // Move the character and handle collisions.
-
-            if (_health <= 0) Die( ); // If health is 0 or less, the character dies.
+            
         }
 
         // This method must be implemented by subclasses to define what happens when the character dies.
@@ -91,31 +88,44 @@ namespace FinalProject
         // Changes the character's state to a new one.
         public void ChangeState(CharState newState)
         {
+            if (_state == newState) return;
+            _previousState = _state;
             _state = newState;
         }
 
         // Handles the logic for when the character is hurt.
         public void HandleHurtState(GameTime gameTime)
         {
-            if (_isHurt)
+            _hurtTimer -= (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+            if (_hurtTimer > 0f)
             {
-                _state = CharState.Hurt; // Set state to hurt.
-            } else ChangeColor(Color.White); // If not hurt, reset color to normal.
+                ChangeState(CharState.Hurt);
+                ChangeColor(Color.Red);
+            } else
+            {
+                _isHurt = false;
+                ChangeColor(Color.White);
+                //ChangeState(CharState.Idle);
+            }
         }
+
 
         // Handles the logic for when the character is attacking.
         public void HandleAttackState(GameTime gameTime)
         {
-            if (_attacking)
+            _attackTimer -= (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+            if (_attackTimer > 0f)
             {
-                _attackTimer -= (float)gameTime.ElapsedGameTime.TotalSeconds; // Count down attack timer.
-                _state = CharState.Attacking; // Set state to attacking.
-                if (_attackTimer <= 0)
-                {
-                    _attacking = false; // Stop attacking when timer runs out.
-                }
-            } else ChangeColor(Color.White); // If not attacking, reset color to normal.
+                ChangeState(CharState.Attacking);
+            } else
+            {
+                _attacking = false;
+                //ChangeState(CharState.Idle);
+            }
         }
+
 
         // Moves the character and checks for collisions with platforms.
         public void ChangePosition(Sprite[] platforms)
@@ -169,8 +179,10 @@ namespace FinalProject
                         {
                             _isHurt = true;
                             _hurtTimer = HURT_DURATION;
-                            _health -= Spike.Damage; // Lose health.
+                            _health -= Spike.Damage;
+                            ChangeState(CharState.Hurt);
                         }
+
                         continue; // Don't block movement for spikes.
                     }
 
@@ -230,6 +242,6 @@ namespace FinalProject
         }
 
         // This method must be implemented by subclasses to play the correct animation for the current state.
-        public abstract void PlayAnimation(CharState state, int speed);
+        public abstract void PlayAnimation(CharState state);
     }
 }

@@ -26,20 +26,34 @@ namespace FinalProject
         // This method is called every frame to update the player's state.
         public override void Update(Sprite[] _platform, GameTime gameTime)
         {
-            // If the player falls below the bottom of the screen, respawn them.
-            if (_destination.Y > SceneManager.WINHEIGHT)
+            // 1. Handle damage/death
+            if (_health <= 0 && _state != CharState.Dead)
             {
+                ChangeState(CharState.Dead);
                 Die( );
+                return; // Prevent further updates if dead.
             }
 
-            // Move the player and handle collisions.
+            HandleHurtState(gameTime);
+            HandleAttackState(gameTime);
             ChangePosition(_platform);
-
-            // Handle player input (keyboard and mouse).
             GetInputs(gameTime);
 
-            // If the player's health drops to zero, respawn them.
-            if (_health <= 0) Die( );
+            //// 2. Handle special states first
+            //if (_state == CharState.Hurt)
+            //{
+            //    HandleHurtState(gameTime);
+            //} else if (_state == CharState.Attacking)
+            //{
+            //    HandleAttackState(gameTime);
+            //} else
+            //{
+            //    ChangePosition(_platform);
+            //    GetInputs(gameTime);
+            //}
+
+            // Play animation at the end
+            PlayAnimation(_state);
         }
 
         // This method resets the player to their original position and restores health.
@@ -61,6 +75,7 @@ namespace FinalProject
             KeyboardState keyboardState = Keyboard.GetState( );
             MouseState mouseState = Mouse.GetState( );
 
+
             // Handle left and right movement.
             if (keyboardState.IsKeyDown(Keys.A))
             {
@@ -81,14 +96,14 @@ namespace FinalProject
                 _velocity.X *= SPRINT_MULTIPLIER; // Move faster.
             }
 
-            // If the player clicks the left mouse button and is not already attacking, start an attack.
             if (mouseState.LeftButton == ButtonState.Pressed && !_attacking)
             {
-                float attackDuration = 0.5f; // How long the attack lasts (in seconds).
-
-                _attacking = true; // Set attacking state.
-                _attackTimer = attackDuration; // Start attack timer.
+                _attacking = true;
+                _attackTimer = 0.5f;
+                ChangeState(CharState.Attacking);
+                Debug.WriteLine("Player is attacking!"); // Log attack action for debugging.
             }
+
 
             // Handle jumping: Space or W key, and only if on the ground.
             if (( keyboardState.IsKeyDown(Keys.Space) || keyboardState.IsKeyDown(Keys.W) ) && _isGrounded)
@@ -100,96 +115,95 @@ namespace FinalProject
             //------------------------STATE MANAGER-------------------------------//
 
             // Set the player's state based on movement and whether they're on the ground.
-            if (_isGrounded)
+            if (!_attacking && !_isHurt)
             {
-                if (_velocity.X == 0f)
+                if (_isGrounded)
                 {
-                    ChangeState(CharState.Idle); // Not moving.
-                } else
-                {
-                    if (keyboardState.IsKeyDown(Keys.LeftShift))
+                    if (_velocity.X == 0f)
                     {
-                        ChangeState(CharState.Sprinting); // Moving fast.
+                        ChangeState(CharState.Idle); // Not moving.
                     } else
                     {
-                        ChangeState(CharState.Walking); // Moving at normal speed.
+                        if (keyboardState.IsKeyDown(Keys.LeftShift))
+                        {
+                            ChangeState(CharState.Sprinting); // Moving fast.
+                        } else
+                        {
+                            ChangeState(CharState.Walking); // Moving at normal speed.
+                        }
                     }
-                }
-            } else
-            {
-                if (_velocity.Y < 0f)
+                } else
                 {
-                    ChangeState(CharState.Jumping); // Moving up.
-                } else if (_velocity.Y > 0f)
-                {
-                    ChangeState(CharState.Falling); // Moving down.
+                    if (_velocity.Y < 0f)
+                    {
+                        ChangeState(CharState.Jumping); // Moving up.
+                    } else if (_velocity.Y > 0f)
+                    {
+                        ChangeState(CharState.Falling); // Moving down.
+                    }
                 }
             }
 
-            _previousState = _state; // Store the previous state for animation purposes.
-
             // Print the current state and velocity to the debug output (for developers).
-            Debug.WriteLine($"State: {_state}   Velocity: {_velocity}");
-
-            // Play the correct animation for the current state.
-            PlayAnimation(_state, 7);
+            Debug.WriteLine($"State: {_state}   Velocity: {_velocity}   Direction: {_direction}");
         }
 
         // This method selects and displays the correct animation frame based on the player's state.
-        public override void PlayAnimation(CharState state, int speed)
+        public override void PlayAnimation(CharState state)
         {
+            int framesPerRow = 4; // Number of frames per row in the sprite sheet.
+            int startFrame, endFrame;
+            int speed = 7;  // Default animation speed (delay)
+
+            // Choose which frames to use based on the player's state.
+            switch (state)
+            {
+                case CharState.Idle:
+                    startFrame = 0;  // Start at frame 0.
+                    endFrame = 2;    // End at frame 2.
+                    break;
+
+                case CharState.Jumping:
+                    startFrame = 4;
+                    endFrame = 7;
+                    break;
+
+                case CharState.Falling:
+                    startFrame = 7;
+                    endFrame = 7;
+                    break;
+
+                case CharState.Walking:
+                    startFrame = 8;  // Start at frame 8.
+                    endFrame = 11;
+                    break;
+
+                case CharState.Sprinting:
+                    startFrame = 12;
+                    endFrame = 14;
+                    break;
+
+                case CharState.Hurt:
+                    startFrame = 16;
+                    endFrame = 18;
+                    ChangeColor(Color.Red); // Change color to red when hurt.
+                    break;
+
+                case CharState.Attacking:
+                    startFrame = 24;
+                    endFrame = 26;
+                    speed = 14; // Faster animation for attacking.
+                    break;
+
+                default:
+                    startFrame = 0;
+                    endFrame = 0;
+                    break;
+            }
+
             // Only update the animation frame if enough time has passed.
             if (frameCounter > speed)
             {
-                int framesPerRow = 4; // Number of frames per row in the sprite sheet.
-
-                int startFrame, endFrame;
-
-                // Choose which frames to use based on the player's state.
-                switch (state)
-                {
-                    case CharState.Idle:
-                        startFrame = 0;  // Start at frame 0.
-                        endFrame = 2;    // End at frame 2.
-                        break;
-
-                    case CharState.Jumping:
-                        startFrame = 4;
-                        endFrame = 7;
-                        break;
-
-                    case CharState.Falling:
-                        startFrame = 7;
-                        endFrame = 7;
-                        break;
-
-                    case CharState.Walking:
-                        startFrame = 8;  // Start at frame 8.
-                        endFrame = 11;
-                        break;
-
-                    case CharState.Sprinting:
-                        startFrame = 12;
-                        endFrame = 14;
-                        break;
-
-                    case CharState.Hurt:
-                        startFrame = 16;
-                        endFrame = 18;
-                        ChangeColor(Color.Red); // Change color to red when hurt.
-                        break;
-
-                    case CharState.Attacking:
-                        startFrame = 24;
-                        endFrame = 27;
-                        break;
-
-                    default:
-                        startFrame = 0;
-                        endFrame = 0;
-                        break;
-                }
-
                 // Calculate which frame to show.
                 int totalFrames = endFrame - startFrame + 1; // How many frames in this animation.
                 int currentIndex = ( frameCounter / speed ) % totalFrames; // Which frame to show now.
