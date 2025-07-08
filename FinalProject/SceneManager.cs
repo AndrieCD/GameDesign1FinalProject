@@ -21,26 +21,14 @@ namespace FinalProject
         const int _spriteWidth = 64;  // Width of a single sprite in pixels
         const int _spriteHeight = 64; // Height of a single sprite in pixels
 
-        int currentLevel = 1; // Tracks the current level (not used in this code, but could be for multiple levels)
+        private readonly int _currentLevel; // Tracks the current level (not used in this code, but could be for multiple levels)
+
+        private Level[] levels;
 
         // This string visually represents the layout of the level.
         // Each character stands for a different type of tile or object.
         // '-' = platform, 'z' = moving platform, 'x' = spike/trap, ' ' = empty space
-        const string _sceneLayout = "                                        " +
-                                    "                                        " +
-                                    "     -------               -------      " +
-                                    "                                        " +
-                                    "                                        " +
-                                    "                                        " +
-                                    "        zzz      -----       zzz        " +
-                                    "                                        " +
-                                    "                                        " +
-                                    "        x                               " +
-                                    "     -------      zzzz     -------      " +
-                                    "                                        " +
-                                    "                                        " +
-                                    "             xxx                        " +
-                                    "----------------------------------------";
+        private string _sceneLayout;
 
         // Scene object fields
         Sprite _background;      // The background image
@@ -53,6 +41,10 @@ namespace FinalProject
         // The constructor sets up the scene: loads textures, creates platforms, and places the player.
         public SceneManager(ContentManager Content)
         {
+            levels = InitializeLevels( );
+            _currentLevel = 1;
+            _sceneLayout = levels[_currentLevel].Layout;
+
             ///// SPRITES //////
 
             // -- Background --
@@ -195,6 +187,56 @@ namespace FinalProject
             }
 
             UpdateCamera( ); // Move the camera to follow the player
+        }
+
+
+        private Level[] InitializeLevels( )
+        {
+            Level level1 = new Level(   "                                        " +
+                                        "                                        " +
+                                        "     -------               -------      " +
+                                        "                                        " +
+                                        "                                        " +
+                                        "                                        " +
+                                        "        zzz      -----       zzz        " +
+                                        "                                        " +
+                                        "                                        " +
+                                        "        x                               " +
+                                        "     -------      zzzz     -------      " +
+                                        "                                        " +
+                                        "                                        " +
+                                        "             xxx                        " +
+                                        "----------------------------------------",  10);
+
+            Level level2 = new Level(   "                                        " +
+                                        "                                        " +
+                                        "     -------               -------      " +
+                                        "                                        " +
+                                        "                                        " +
+                                        "                                        " +
+                                        "        zzz      -----       zzz        " +
+                                        "                                        " +
+                                        "                                        " +
+                                        "        x                               " +
+                                        "     -------      zzzz     -------      " +
+                                        "                                        " +
+                                        "                                        " +
+                                        "             xxx                        " +
+                                        "----------------------------------------", 20);
+
+            return new Level[] { level1, level2 };
+        }
+    }
+
+
+    struct Level
+    {
+        public string Layout;
+        public int EnemyCount;
+        public Level(string layout, int enemyCount)
+        {
+            Layout = layout;
+            EnemyCount = enemyCount;
         }
     }
 
