@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace FinalProject
@@ -21,7 +22,7 @@ namespace FinalProject
         const int _spriteWidth = 64;  // Width of a single sprite in pixels
         const int _spriteHeight = 64; // Height of a single sprite in pixels
 
-        int currentLevel = 1; // Tracks the current level (not used in this code, but could be for multiple levels)
+        private readonly int _currentLevel; // Tracks the current level (not used in this code, but could be for multiple levels)
 
         // This string visually represents the layout of the level.
         // Each character stands for a different type of tile or object.
@@ -41,6 +42,7 @@ namespace FinalProject
                                     "                                        " +
                                     "             xxx                        " +
                                     "----------------------------------------";
+
 
         // Scene object fields
         Sprite _background;      // The background image
@@ -196,12 +198,6 @@ namespace FinalProject
 
             UpdateCamera( ); // Move the camera to follow the player
         }
-    }
-
-    // This struct is empty and not used, but could be used for level data in the future.
-    struct Level1
-    {
-
     }
 
 }
