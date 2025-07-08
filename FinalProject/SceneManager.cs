@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace FinalProject
@@ -238,12 +239,6 @@ namespace FinalProject
             Layout = layout;
             EnemyCount = enemyCount;
         }
-    }
-
-    // This struct is empty and not used, but could be used for level data in the future.
-    struct Level1
-    {
-
     }
 
 }
