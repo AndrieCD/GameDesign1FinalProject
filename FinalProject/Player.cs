@@ -6,218 +6,175 @@ using System.Diagnostics;
 
 namespace FinalProject
 {
-    // The Player class represents the main controllable character in the game.
-    // It inherits from Character, so it gets all movement, collision, and animation logic.
+    /// <summary>
+    /// The Player class represents the main controllable character in the game.
+    /// Inherits from Character, so it gets all movement, collision, and animation logic.
+    /// </summary>
     public class Player : Character
     {
-        // This constant controls how much faster the player moves when sprinting.
-        private const float SPRINT_MULTIPLIER = 1.5f; // multiplier for sprinting speed
+        private const float SPRINT_MULTIPLIER = 2f; // Multiplier for sprinting speed
 
-        // < Constructor > ---------------------------------------
-        // This constructor sets up the player with its texture, position, and color.
-        // It also creates a HUD (Heads-Up Display) for the player.
+        // --- Constructor ---
         public Player(Texture2D texture, Rectangle destination, Rectangle source, Color color)
             : base(texture, destination, source, color)
         {
-            HUD hUD = new HUD(this); // Create a HUD to display player info (like health).
+            _health = 200;
+            _ = new HUD(this); // Create a HUD to display player info (like health)
         }
 
-        // < Methods > -------------------------------------
-        // This method is called every frame to update the player's state.
-        public override void Update(Sprite[] _platform, GameTime gameTime)
+        // --- Public Methods ---
+
+        /// <summary>
+        /// Updates the player's state, handles input, and manages animation.
+        /// </summary>
+        public override void Update(Sprite[] platforms, GameTime gameTime)
         {
-            // 1. Handle damage/death
             if (_health <= 0 && _state != CharState.Dead)
             {
+                _deathTimer = 1f;
                 ChangeState(CharState.Dead);
-                Die( );
-                return; // Prevent further updates if dead.
+                Die(gameTime);
+                return;
             }
 
             HandleHurtState(gameTime);
             HandleAttackState(gameTime);
-            ChangePosition(_platform);
-            GetInputs(gameTime);
+            ChangePosition(platforms);
+            HandleInput(gameTime);
 
-            //// 2. Handle special states first
-            //if (_state == CharState.Hurt)
-            //{
-            //    HandleHurtState(gameTime);
-            //} else if (_state == CharState.Attacking)
-            //{
-            //    HandleAttackState(gameTime);
-            //} else
-            //{
-            //    ChangePosition(_platform);
-            //    GetInputs(gameTime);
-            //}
-
-            // Play animation at the end
             PlayAnimation(_state);
         }
 
-        // This method resets the player to their original position and restores health.
-        public override void Die( )
+        /// <summary>
+        /// Handles the player's death animation and respawn.
+        /// </summary>
+        public override void Die(GameTime gameTime)
         {
-            // Move player back to starting location.
-            _destination.Location = _originalLocation;
-            _velocity.Y = 0f; // Stop any vertical movement.
-            _isGrounded = true; // Player is now on the ground.
-            _health = 100; // Restore full health.
+            _deathTimer -= (float)gameTime.ElapsedGameTime.TotalSeconds;
+            if (_deathTimer <= 0f)
+            {
+                _destination.Location = _originalLocation;
+                _velocity.Y = 0f;
+                _isGrounded = true;
+                _health = 100;
+            }
         }
 
-        // This method checks for keyboard and mouse input and updates the player's movement and state.
-        public void GetInputs(GameTime gameTime)
+        /// <summary>
+        /// Handles keyboard and mouse input, updates movement and state.
+        /// </summary>
+        private void HandleInput(GameTime gameTime)
         {
-            //--------------------INPUT MANAGER--------------------------------//
-
-            // Get the current state of the keyboard and mouse.
             KeyboardState keyboardState = Keyboard.GetState( );
             MouseState mouseState = Mouse.GetState( );
 
+            if (!_attacking && _health > 0)
+            {
+                HandleMovementInput(keyboardState);
+                HandleJumpInput(keyboardState);
+            }
 
-            // Handle left and right movement.
-            if (keyboardState.IsKeyDown(Keys.A))
+            if (_health > 0 && mouseState.LeftButton == ButtonState.Pressed && !_attacking && _attackCD <= 0f)
             {
-                _velocity.X = -SPEED; // Move left.
-                _direction = -1; // Face left.
-            } else if (keyboardState.IsKeyDown(Keys.D))
+                HandleAttackInput(mouseState, gameTime);
+            }
+
+
+            UpdateStateBasedOnInput(keyboardState);
+            _attackCD -= (float)gameTime.ElapsedGameTime.TotalSeconds;
+            if (_attackCD < 0f) _attackCD = 0f;
+        }
+
+        /// <summary>
+        /// Handles the logic for when the player is attacking.
+        /// </summary>
+        public override void HandleAttackState(GameTime gameTime)
+        {
+            _attackTimer -= (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+            if (_attackTimer > 0f)
             {
-                _velocity.X = SPEED; // Move right.
-                _direction = 1; // Face right.
+                Rectangle hitBox = GetCharacterBounds(Destination.Location);
+                hitBox.Location = new Point(hitBox.X + ( hitBox.Width / 2 ) * _direction, hitBox.Y);
+                hitBox.Width = hitBox.Width / 2; 
+                foreach (Character enemy in SceneManager.Enemies)
+                {
+                    if (hitBox.Intersects(enemy.Destination))
+                    {
+                        enemy.TakeDamage(20);
+                        break;
+                    }
+                }
+                ChangeState(CharState.Attacking);
             } else
             {
-                _velocity.X = 0f; // No horizontal movement.
+                _attacking = false;
+            }
+        }
+
+        // --- Private Input Helpers ---
+
+        private void HandleMovementInput(KeyboardState keyboardState)
+        {
+            if (keyboardState.IsKeyDown(Keys.A))
+            {
+                _velocity.X = -SPEED;
+                _direction = -1;
+            } else if (keyboardState.IsKeyDown(Keys.D))
+            {
+                _velocity.X = SPEED;
+                _direction = 1;
+            } else
+            {
+                _velocity.X = 0f;
             }
 
-            // If the player holds the shift key, increase speed for sprinting.
             if (keyboardState.IsKeyDown(Keys.LeftShift))
             {
-                _velocity.X *= SPRINT_MULTIPLIER; // Move faster.
+                _velocity.X *= SPRINT_MULTIPLIER;
             }
+        }
 
-            if (mouseState.LeftButton == ButtonState.Pressed && !_attacking)
-            {
-                _attacking = true;
-                _attackTimer = 0.5f;
-                ChangeState(CharState.Attacking);
-                Debug.WriteLine("Player is attacking!"); // Log attack action for debugging.
-            }
-
-
-            // Handle jumping: Space or W key, and only if on the ground.
+        private void HandleJumpInput(KeyboardState keyboardState)
+        {
             if (( keyboardState.IsKeyDown(Keys.Space) || keyboardState.IsKeyDown(Keys.W) ) && _isGrounded)
             {
-                _velocity.Y = -JUMP_POWER; // Move up (jump).
-                _isGrounded = false; // Player is now in the air.
+                _velocity.Y = -JUMP_POWER;
+                _isGrounded = false;
             }
+        }
 
-            //------------------------STATE MANAGER-------------------------------//
+        private void HandleAttackInput(MouseState mouseState, GameTime gameTime)
+        {
+            _attacking = true;
+            _attackTimer = 0.25f;
+            _attackCD = 0.5f; // Set cooldown here, only when attack is triggered
+            ChangeState(CharState.Attacking);
+            Debug.WriteLine("Player is attacking!");
+        }
 
-            // Set the player's state based on movement and whether they're on the ground.
-            if (!_attacking && !_isHurt)
+
+        private void UpdateStateBasedOnInput(KeyboardState keyboardState)
+        {
+            if (!_attacking && !_isHurt && _health > 0)
             {
                 if (_isGrounded)
                 {
                     if (_velocity.X == 0f)
                     {
-                        ChangeState(CharState.Idle); // Not moving.
+                        ChangeState(CharState.Idle);
                     } else
                     {
-                        if (keyboardState.IsKeyDown(Keys.LeftShift))
-                        {
-                            ChangeState(CharState.Sprinting); // Moving fast.
-                        } else
-                        {
-                            ChangeState(CharState.Walking); // Moving at normal speed.
-                        }
+                        ChangeState(keyboardState.IsKeyDown(Keys.LeftShift) ? CharState.Sprinting : CharState.Walking);
                     }
                 } else
                 {
                     if (_velocity.Y < 0f)
-                    {
-                        ChangeState(CharState.Jumping); // Moving up.
-                    } else if (_velocity.Y > 0f)
-                    {
-                        ChangeState(CharState.Falling); // Moving down.
-                    }
+                        ChangeState(CharState.Jumping);
+                    else if (_velocity.Y > 0f)
+                        ChangeState(CharState.Falling);
                 }
             }
-
-            // Print the current state and velocity to the debug output (for developers).
-            Debug.WriteLine($"State: {_state}   Velocity: {_velocity}   Direction: {_direction}");
-        }
-
-        // This method selects and displays the correct animation frame based on the player's state.
-        public override void PlayAnimation(CharState state)
-        {
-            int framesPerRow = 4; // Number of frames per row in the sprite sheet.
-            int startFrame, endFrame;
-            int speed = 7;  // Default animation speed (delay)
-
-            // Choose which frames to use based on the player's state.
-            switch (state)
-            {
-                case CharState.Idle:
-                    startFrame = 0;  // Start at frame 0.
-                    endFrame = 2;    // End at frame 2.
-                    break;
-
-                case CharState.Jumping:
-                    startFrame = 4;
-                    endFrame = 7;
-                    break;
-
-                case CharState.Falling:
-                    startFrame = 7;
-                    endFrame = 7;
-                    break;
-
-                case CharState.Walking:
-                    startFrame = 8;  // Start at frame 8.
-                    endFrame = 11;
-                    break;
-
-                case CharState.Sprinting:
-                    startFrame = 12;
-                    endFrame = 14;
-                    break;
-
-                case CharState.Hurt:
-                    startFrame = 16;
-                    endFrame = 18;
-                    ChangeColor(Color.Red); // Change color to red when hurt.
-                    break;
-
-                case CharState.Attacking:
-                    startFrame = 24;
-                    endFrame = 26;
-                    speed = 14; // Faster animation for attacking.
-                    break;
-
-                default:
-                    startFrame = 0;
-                    endFrame = 0;
-                    break;
-            }
-
-            // Only update the animation frame if enough time has passed.
-            if (frameCounter > speed)
-            {
-                // Calculate which frame to show.
-                int totalFrames = endFrame - startFrame + 1; // How many frames in this animation.
-                int currentIndex = ( frameCounter / speed ) % totalFrames; // Which frame to show now.
-                int frameNumber = startFrame + currentIndex; // The actual frame number in the sprite sheet.
-
-                // Calculate the X and Y position of the frame in the sprite sheet.
-                int frameX = ( frameNumber % framesPerRow ) * _frameWidth;
-                int frameY = ( frameNumber / framesPerRow ) * _frameHeight;
-
-                // Set the source rectangle to the correct frame.
-                _source = new Rectangle(new Point(frameX, frameY), new Point(_frameWidth, _frameHeight));
-            }
-
-            frameCounter++; // Move to the next frame for next time.
         }
     }
 }
