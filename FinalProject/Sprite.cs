@@ -14,6 +14,7 @@ namespace FinalProject
         protected Rectangle _destination;
         protected Rectangle _source;
         protected Color _color;
+        protected Color _origColor;
         protected Point _originalLocation;
 
         private int _moveDirection; // 1 = right, -1 = left
@@ -25,6 +26,7 @@ namespace FinalProject
             _destination = destination;
             _source = source;
             _color = color;
+            _origColor = color;
 
             _originalLocation = destination.Location;
             _moveDirection = 1;

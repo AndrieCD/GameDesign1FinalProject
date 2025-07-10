@@ -6,242 +6,313 @@ using System.Diagnostics;
 
 namespace FinalProject
 {
-    // This enum defines all possible states a character can be in.
-    public enum CharState { Idle = 1, Walking = 2, Jumping = 3, Falling = 4, Hurt = 5, Sprinting = 6, Dead = 7, Attacking = 8 };
+    /// <summary>
+    /// All possible states a character can be in.
+    /// </summary>
+    public enum CharState
+    {
+        Idle = 1,
+        Walking = 2,
+        Jumping = 3,
+        Falling = 4,
+        Hurt = 5,
+        Sprinting = 6,
+        Dead = 7,
+        Attacking = 8
+    }
 
-    // The Character class is an abstract base class for all characters in the game (like players or enemies).
-    // It inherits from the Sprite class, so it has all the properties and methods of a Sprite.
+    /// <summary>
+    /// Abstract base class for all characters in the game (players, enemies).
+    /// Handles state, movement, animation, and collision.
+    /// </summary>
     public abstract class Character : Sprite
     {
-        // < Fields > -----------------------------------------
-        // These variables store the character's health, state, movement, and other important info.
-        protected int _health; // The character's current health points.
-        protected CharState _state; // The character's current state (idle, walking, etc.).
-        protected CharState _previousState; // The character's previous state.
-        protected Vector2 _velocity; // The character's current speed and direction.
-        protected bool _isGrounded; // True if the character is standing on the ground.
-        protected int frameCounter; // Used for animation frame timing.
-        protected int _direction; // 1 for right, -1 for left (which way the character is facing).
+        // --- State & Movement ---
+        protected int _health;
+        protected CharState _state;
+        protected CharState _previousState;
+        protected Vector2 _velocity;
+        protected bool _isGrounded;
+        protected int _direction; // 1 = right, -1 = left
 
-        // Variables for handling when the character is hurt or attacking.
+        // --- Animation ---
+        protected int frameCounter;
+        protected readonly int _frameWidth;
+        protected readonly int _frameHeight;
+
+        // --- Action Timers ---
         protected bool _isHurt;
         protected float _hurtTimer;
         protected bool _attacking;
         protected float _attackTimer;
-        protected const float HURT_DURATION = 0.25f; // How long the hurt state lasts (in seconds).
+        protected float _attackCD;
+        protected float _deathTimer = 0f;
 
-        // Constants for movement and collision.
-        protected const int OFFSET = 50; // Used to adjust collision detection area.
-        protected const float SPEED = 8f; // How fast the character moves.
-        protected const float GRAVITY = 1f; // How fast the character falls.
-        protected const float JUMP_POWER = 25f; // How high the character jumps.
+        // --- Constants ---
+        protected const float HURT_DURATION = 0.25f;
+        protected const int OFFSET = 50;
+        protected const float SPEED = 5f;
+        protected const float GRAVITY = 1f;
+        protected const float JUMP_POWER = 25f;
 
-        // These are used to help with sprite sheet animations.
-        protected readonly int _frameWidth;  // Width of a single animation frame.
-        protected readonly int _frameHeight; // Height of a single animation frame.
-
-        // < Constructor > ---------------------------------------
-        // This method runs when a new Character is created.
-        // It sets up the character's starting values and calculates animation frame sizes.
-        public Character(Texture2D texture, Rectangle destination, Rectangle source, Color color)
+        // --- Constructor ---
+        protected Character(Texture2D texture, Rectangle destination, Rectangle source, Color color)
             : base(texture, destination, source, color)
         {
-            // Set default values for state and timers.
+            _state = CharState.Idle;
+            _previousState = CharState.Idle;
+            _velocity = Vector2.Zero;
+            _isGrounded = true;
+            _direction = 1;
+            _originalLocation = new Point(destination.X, destination.Y);
+
             _isHurt = false;
             _hurtTimer = 0f;
             _attacking = false;
             _attackTimer = 0f;
+            _attackCD = 0f;
 
-            _health = 100; // Start with full health.
-            _state = CharState.Idle; // Start in idle state.
-            _previousState = CharState.Idle;
-            _velocity = Vector2.Zero; // Not moving at start.
-            _isGrounded = true; // Start on the ground.
-            _originalLocation = new Point(destination.X, destination.Y);
-
-            // Set up animation frame sizes based on the texture.
             frameCounter = 0;
-            _frameWidth = texture.Width / 4; // Assumes 4 columns in the sprite sheet.
-            _frameHeight = texture.Height / 7; // Assumes 7 rows in the sprite sheet.
-
-            _direction = 1; // Start facing right.
+            _frameWidth = texture.Width / 4;
+            _frameHeight = texture.Height / 7;
         }
 
-        // < Properties > -----------------------------------------
-        // These provide read-only access to some private fields.
+        // --- Properties ---
+        public Vector2 Velocity => _velocity;
+        public int Direction => _direction;
+        public int Health => _health;
+        public CharState State => _state;
 
-        public Vector2 Velocity { get => _velocity; } // Get the current velocity.
-        public int Direction { get => _direction; } // Get the current direction.
-        protected int Health { get => _health; } // Get the current health.
+        public float DeathTimer => _deathTimer;      
+        
+        // --- Public Methods ---
 
-        // < Methods > -------------------------------------
-        // This method updates the character every frame.
-        // It handles hurt state, movement, and checks if the character should die.
-        public virtual void Update(Sprite[] _platform, GameTime gameTime)
-        {
-            
-        }
+        /// <summary>
+        /// Update character logic. To be overridden by subclasses.
+        /// </summary>
+        public virtual void Update(Sprite[] platforms, GameTime gameTime) { }
 
-        // This method must be implemented by subclasses to define what happens when the character dies.
-        public abstract void Die( );
+        /// <summary>
+        /// Called when the character dies. Must be implemented by subclasses.
+        /// </summary>
+        public abstract void Die(GameTime gameTime);
 
-        // Changes the character's state to a new one.
+        /// <summary>
+        /// Change the character's state and reset animation frame.
+        /// </summary>
         public void ChangeState(CharState newState)
         {
-            if (_state == newState) return;
-            _previousState = _state;
-            _state = newState;
+            if (_state != newState)
+            {
+                _previousState = _state;
+                _state = newState;
+                frameCounter = 0;
+                //Debug.WriteLine($"State: {_state}");
+            }
         }
 
-        // Handles the logic for when the character is hurt.
+        /// <summary>
+        /// Handles the logic for when the character is hurt.
+        /// </summary>
         public void HandleHurtState(GameTime gameTime)
         {
             _hurtTimer -= (float)gameTime.ElapsedGameTime.TotalSeconds;
-
             if (_hurtTimer > 0f)
             {
-                ChangeState(CharState.Hurt);
+                if (!_attacking)
+                    ChangeState(CharState.Hurt);
                 ChangeColor(Color.Red);
             } else
             {
                 _isHurt = false;
-                ChangeColor(Color.White);
-                //ChangeState(CharState.Idle);
+                ChangeColor(_origColor);
             }
         }
 
+        /// <summary>
+        /// Reduces health and triggers hurt state.
+        /// </summary>
+        public virtual void TakeDamage(int damage)
+        {
+            if (_health > 0 && !_isHurt)
+            {
+                _isHurt = true;
+                _hurtTimer = HURT_DURATION;
+                ChangeState(CharState.Hurt);
+                _health -= damage;
+                Debug.WriteLine($"Took {damage} damage! Remaining health: {_health}");
+            }
+        }
 
-        // Handles the logic for when the character is attacking.
-        public void HandleAttackState(GameTime gameTime)
+        /// <summary>
+        /// Handles the logic for when the character is attacking.
+        /// </summary>
+        public virtual void HandleAttackState(GameTime gameTime)
         {
             _attackTimer -= (float)gameTime.ElapsedGameTime.TotalSeconds;
-
             if (_attackTimer > 0f)
             {
                 ChangeState(CharState.Attacking);
             } else
             {
                 _attacking = false;
-                //ChangeState(CharState.Idle);
             }
         }
 
-
-        // Moves the character and checks for collisions with platforms.
+        /// <summary>
+        /// Moves the character and checks for collisions with platforms.
+        /// </summary>
         public void ChangePosition(Sprite[] platforms)
         {
+            if (_attacking)
+                _velocity.X = 0;
+
             if (!_isGrounded)
-            {
-                // If not on the ground, apply gravity to make the character fall.
-                if (!_isGrounded) _velocity.Y += GRAVITY;
-            }
+                _velocity.Y += GRAVITY;
 
-            // Calculate the new position after moving and colliding.
             Point newPos = HandleCollisions(platforms);
-
-            // Make sure the character stays within the screen boundaries.
             newPos.X = Math.Clamp(newPos.X, 0 - OFFSET, SceneManager.SCENEWIDTH - _destination.Width + OFFSET);
-            //newPos.Y = Math.Clamp(newPos.Y, 0, SceneManager.WINHEIGHT + _destination.Height); // (Commented out) Would clamp Y position.
-
-            _destination.Location = newPos; // Update the character's position.
+            _destination.Location = newPos;
         }
 
-        // Returns a rectangle representing the character's collision area at a given position.
+        // --- Protected/Private Methods ---
+
+        /// <summary>
+        /// Returns a rectangle representing the character's collision area at a given position.
+        /// </summary>
         protected Rectangle GetCharacterBounds(Point newPos)
         {
-            return new Rectangle(newPos.X + OFFSET, newPos.Y + OFFSET, _destination.Width - ( 2 * OFFSET ), _destination.Height - OFFSET);
+            return new Rectangle(
+                newPos.X + OFFSET,
+                newPos.Y + OFFSET,
+                _destination.Width - ( 2 * OFFSET ),
+                _destination.Height - OFFSET
+            );
         }
 
-        // Handles collisions with tiles (like platforms or spikes) and updates the character's position.
+        /// <summary>
+        /// Handles collisions with tiles (like platforms or spikes) and updates the character's position.
+        /// </summary>
         protected Point HandleCollisions(Sprite[] tiles)
         {
-            _isGrounded = false; // Assume not grounded until proven otherwise.
-            _isHurt = false; // Reset hurt state (will be set if hit by a spike).
-
-            // Start with the current position.
+            _isGrounded = false;
+            //_isHurt = false;
             Point newPos = new Point(_destination.X, _destination.Y);
 
-            // --- Horizontal Collision ---
-            newPos.X += (int)_velocity.X; // Move horizontally.
+            // Horizontal
+            newPos.X += (int)_velocity.X;
             Rectangle horizBounds = GetCharacterBounds(newPos);
-
             for (int i = 0; i < tiles.Length; i++)
             {
                 Sprite tile = tiles[i];
                 if (tile == null) continue;
-
                 if (horizBounds.Intersects(tile.Destination))
                 {
-                    // If the tile is a spike, hurt the character.
                     if (tile is Spike)
                     {
-                        if (!_isHurt)
-                        {
-                            _isHurt = true;
-                            _hurtTimer = HURT_DURATION;
-                            _health -= Spike.Damage;
-                            ChangeState(CharState.Hurt);
-                        }
-
-                        continue; // Don't block movement for spikes.
+                        if (this is Player) TakeDamage(Spike.Damage);
+                        continue;
                     }
-
-                    // If moving right, stop at the left edge of the tile.
                     if (_velocity.X > 0)
-                    {
                         newPos.X = tile.Destination.Left - _destination.Width + OFFSET;
-                    }
-                    // If moving left, stop at the right edge of the tile.
                     else if (_velocity.X < 0)
-                    {
                         newPos.X = tile.Destination.Right - OFFSET;
-                    }
                 }
             }
 
-            // --- Vertical Collision ---
-            newPos.Y += (int)_velocity.Y; // Move vertically.
+            // Vertical
+            newPos.Y += (int)_velocity.Y;
             Rectangle vertBounds = GetCharacterBounds(newPos);
-
             for (int i = 0; i < tiles.Length; i++)
             {
                 Sprite tile = tiles[i];
                 if (tile == null) continue;
-
                 if (vertBounds.Intersects(tile.Destination))
                 {
-                    // If the tile is a spike, hurt the character.
                     if (tile is Spike)
                     {
-                        if (!_isHurt)
+                        if (tile is Spike)
                         {
-                            _isHurt = true;
-                            _hurtTimer = HURT_DURATION;
-                            _health -= Spike.Damage;
+                            if (this is Player) TakeDamage(Spike.Damage);
+                            continue;
                         }
-                        continue; // Don't block movement for spikes.
+                        continue;
                     }
-
-                    // If falling down, land on top of the tile.
                     if (_velocity.Y > 0)
                     {
                         newPos.Y = tile.Destination.Top - _destination.Height;
-                        _isGrounded = true; // Now on the ground.
-                        _velocity.Y = 0; // Stop falling.
-                    }
-                    // If jumping up, stop at the bottom of the tile.
-                    else if (_velocity.Y < 0)
+                        _isGrounded = true;
+                        _velocity.Y = 0;
+                    } else if (_velocity.Y < 0)
                     {
                         newPos.Y = tile.Destination.Bottom;
-                        _velocity.Y = 0; // Stop moving up.
+                        _velocity.Y = 0;
                     }
                 }
             }
-
-            return newPos; // Return the new position after handling collisions.
+            return newPos;
         }
 
-        // This method must be implemented by subclasses to play the correct animation for the current state.
-        public abstract void PlayAnimation(CharState state);
+        /// <summary>
+        /// Selects and displays the correct animation frame based on the player's state.
+        /// </summary>
+        public void PlayAnimation(CharState state)
+        {
+            int framesPerRow = 4;
+            int startFrame, endFrame;
+            int speed = 7;
+
+            GetAnimationFrameRange(state, out startFrame, out endFrame, ref speed);
+
+            if (frameCounter > speed)
+            {
+                int totalFrames = endFrame - startFrame + 1;
+                int currentIndex = ( frameCounter / speed ) % totalFrames;
+                int frameNumber = startFrame + currentIndex;
+                int frameX = ( frameNumber % framesPerRow ) * _frameWidth;
+                int frameY = ( frameNumber / framesPerRow ) * _frameHeight;
+                _source = new Rectangle(new Point(frameX, frameY), new Point(_frameWidth, _frameHeight));
+            }
+            frameCounter++;
+        }
+
+        /// <summary>
+        /// Determines the animation frame range and speed for a given state.
+        /// </summary>
+        private void GetAnimationFrameRange(CharState state, out int startFrame, out int endFrame, ref int speed)
+        {
+            switch (state)
+            {
+                case CharState.Idle:
+                    startFrame = 0; endFrame = 2;
+                    break;
+                case CharState.Jumping:
+                    startFrame = 4; endFrame = 7;
+                    break;
+                case CharState.Falling:
+                    startFrame = 7; endFrame = 7;
+                    break;
+                case CharState.Walking:
+                    startFrame = 8; endFrame = 11;
+                    break;
+                case CharState.Sprinting:
+                    startFrame = 12; endFrame = 14;
+                    break;
+                case CharState.Hurt:
+                    startFrame = 16; endFrame = 18;
+                    ChangeColor(Color.Red);
+                    break;
+                case CharState.Attacking:
+                    startFrame = 24; endFrame = 26; speed = 4;
+                    break;
+                case CharState.Dead:
+                    startFrame = 20; endFrame = 23;
+                    ChangeColor(Color.Gray);
+                    break;
+                default:
+                    startFrame = 0; endFrame = 0;
+                    break;
+            }
+        }
     }
 }
