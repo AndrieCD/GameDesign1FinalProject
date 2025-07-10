@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Reflection.Metadata;
 
 namespace FinalProject
 {
@@ -17,15 +18,15 @@ namespace FinalProject
         static int _WINHEIGHT;     // Height of the game window
         static int _SCENEWIDTH;    // Total width of the scene (can be larger than window for scrolling)
         static int _SCENEHEIGHT;   // Total height of the scene
+        static ContentManager Content;
 
         // Constants for the size of each sprite (platform, player, etc.)
         const int _spriteWidth = 64;  // Width of a single sprite in pixels
         const int _spriteHeight = 64; // Height of a single sprite in pixels
 
-        private readonly int _currentLevel; // Tracks the current level (not used in this code, but could be for multiple levels)
-
-        private Level[] levels;
-
+        private int _currentLevel; // Tracks the current level (not used in this code, but could be for multiple levels)
+        private Level[] _levels;
+        private Character[] _enemies;
         // This string visually represents the layout of the level.
         // Each character stands for a different type of tile or object.
         // '-' = platform, 'z' = moving platform, 'x' = spike/trap, ' ' = empty space
@@ -36,17 +37,16 @@ namespace FinalProject
         Sprite[] _platform;      // Array of all platforms and traps in the scene
         Player _player;          // The player character
 
+        Texture2D grassPlatform, spike;
+
         private Matrix _cameraTransform; // Used to move the camera for side-scrolling
 
         // < CONSTRUCTOR > -----------------------------------------------------------------
         // The constructor sets up the scene: loads textures, creates platforms, and places the player.
-        public SceneManager(ContentManager Content)
+        public SceneManager()
         {
-            levels = InitializeLevels( );
+            _levels = InitializeLevels( );
             _currentLevel = 1;
-            _sceneLayout = levels[_currentLevel].Layout;
-
-            ///// SPRITES //////
 
             // -- Background --
             Texture2D bgTexture = Content.Load<Texture2D>("Game Background 6"); // Load the background image
@@ -58,45 +58,11 @@ namespace FinalProject
             );
 
             // -- Platform --
-            Texture2D grassPlatform = Content.Load<Texture2D>("Platform 9"); // Load platform texture
+            grassPlatform = Content.Load<Texture2D>("Platform 9"); // Load platform texture
 
             // -- Spike --
-            Texture2D spike = Content.Load<Texture2D>("spike_trap_full"); // Load spike/trap texture
-
-            _platform = new Sprite[_sceneLayout.Length]; // Create an array for all platforms/traps
-
-            // Loop through each character in the layout string to create the correct object at each spot
-            for (int i = 0; i < _sceneLayout.Length; i++)
-            {
-                char tile = _sceneLayout[i];
-                int x = ( i % 40 ) * _spriteWidth;  // Calculate X position based on column
-                int y = ( i / 40 ) * _spriteHeight; // Calculate Y position based on row
-                Rectangle destRect = new Rectangle(x, y, _spriteWidth, _spriteHeight);
-                Rectangle sourceRectangle;
-                switch (tile)
-                {
-                    case '-': // Normal platform
-                        sourceRectangle = new Rectangle(0, 0, grassPlatform.Width / 6, grassPlatform.Height);
-                        _platform[i] = new Sprite(grassPlatform, destRect, sourceRectangle, Color.White);
-                        break;
-                    case 'z': // Moving platform (uses same texture as normal platform)
-                        sourceRectangle = new Rectangle(0, 0, grassPlatform.Width / 6, grassPlatform.Height);
-                        _platform[i] = new Sprite(grassPlatform, destRect, sourceRectangle, Color.White);
-                        break;
-                    //case 'o': // coin (not implemented here)
-                    //    sourceRectangle = new Rectangle(0, 0, coin.Width, coin.Height/4);
-                    //    _platform[i] = new Coin(coin, destRect, sourceRectangle, Color.White);
-                    //    break;
-                    case 'x': // Spike/trap
-                        sourceRectangle = new Rectangle(( spike.Width / 8 ) * 3, 0, spike.Width / 8, spike.Height);
-                        _platform[i] = new Spike(spike, destRect, sourceRectangle, Color.White);
-                        break;
-                    default:
-                        _platform[i] = null; // Empty space, no object
-                        break;
-                }
-            }
-
+            spike = Content.Load<Texture2D>("spike_trap_full"); // Load spike/trap texture
+          
             // --- Player ---- //
             Texture2D plyrTexture = Content.Load<Texture2D>("PlayerSprites"); // Load player sprite sheet
             Rectangle plyrDest = new Rectangle(
@@ -115,11 +81,12 @@ namespace FinalProject
         public static int WINHEIGHT { get => _WINHEIGHT; set => _WINHEIGHT = value; }
         public static int SCENEWIDTH { get => _SCENEWIDTH; set => _SCENEWIDTH = value; }
         public static int SCENEHEIGHT { get => _SCENEHEIGHT; set => _SCENEHEIGHT = value; }
+        public static ContentManager CONTENT { get => Content; set => Content =  value ; }
 
         // < METHODS > ---------------------------------------------------------------------
 
         // This method updates the camera's position so it follows the player as they move.
-        private void UpdateCamera( )
+        public void UpdateCamera( )
         {
             // Get the player's position
             Vector2 playerPos = new Vector2(_player.Destination.X, _player.Destination.Y);
@@ -188,56 +155,113 @@ namespace FinalProject
             }
 
             UpdateCamera( ); // Move the camera to follow the player
+
+            if ( // check if enemies are 0 )
+            {
+                if (_currentLevel + 1 < _levels.Length)
+                {
+                    _currentLevel++;
+                    _sceneLayout = Level.Layout;
+                    CreatePlatforms( );
+                    
+                } else
+                {
+                    // Game finished (last level)
+                    Debug.WriteLine("All levels complete!");
+                }
+            }
         }
 
-
-        private Level[] InitializeLevels( )
+        public void SpawnEnemies()
         {
-            Level level1 = new Level(   "                                        " +
-                                        "                                        " +
-                                        "     -------               -------      " +
-                                        "                                        " +
-                                        "                                        " +
-                                        "                                        " +
-                                        "        zzz      -----       zzz        " +
-                                        "                                        " +
-                                        "                                        " +
-                                        "        x                               " +
-                                        "     -------      zzzz     -------      " +
-                                        "                                        " +
-                                        "                                        " +
-                                        "             xxx                        " +
-                                        "----------------------------------------",  10);
+            _enemies = new Character[_levels[_currentLevel].EnemyCount];
 
-            Level level2 = new Level(   "                                        " +
-                                        "                                        " +
-                                        "     -------               -------      " +
-                                        "                                        " +
-                                        "                                        " +
-                                        "                                        " +
-                                        "        zzz      -----       zzz        " +
-                                        "                                        " +
-                                        "                                        " +
-                                        "        x                               " +
-                                        "     -------      zzzz     -------      " +
-                                        "                                        " +
-                                        "                                        " +
-                                        "             xxx                        " +
-                                        "----------------------------------------", 20);
+            for (int i = 0; i < _enemies.Length; i++)
+            {
+                Point pos = _levels[_currentLevel].EnemyPositions[i];
 
-            return new Level[] { level1, level2 };
+                Texture2D enemyTexture = Content.Load<Texture2D>("EnemySprite");
+                Rectangle dest = new Rectangle((int)pos.X, (int)pos.Y, _spriteWidth * 2, _spriteHeight * 2);
+                Rectangle source = new Rectangle(0, 0, enemyTexture.Width / 4, enemyTexture.Height); // Assuming sprite sheet
+                _enemies[i] = new Enemy(enemyTexture, dest, source, Color.White); // Or any custom NPC subclass
+            }
         }
+
+        public Level[] InitializeLevels( )
+        {
+            Level level1 = new Level(2, new Point[] {
+                                                    new Point(6 * _spriteWidth, 1 * _spriteHeight),
+                                                    new Point(15 * _spriteWidth, WINHEIGHT - ( _spriteHeight * 7 ))
+                                                });
+
+            return new Level[] { level1 };
+        }
+
+        public void CreatePlatforms()
+        {
+            _platform = new Sprite[_sceneLayout.Length]; // Create an array for all platforms/traps
+
+            // Loop through each character in the layout string to create the correct object at each spot
+            for (int i = 0; i < _sceneLayout.Length; i++)
+            {
+                char tile = _sceneLayout[i];
+                int x = ( i % 40 ) * _spriteWidth;  // Calculate X position based on column
+                int y = ( i / 40 ) * _spriteHeight; // Calculate Y position based on row
+                Rectangle destRect = new Rectangle(x, y, _spriteWidth, _spriteHeight);
+                Rectangle sourceRectangle;
+                switch (tile)
+                {
+                    case '-': // Normal platform
+                        sourceRectangle = new Rectangle(0, 0, grassPlatform.Width / 6, grassPlatform.Height);
+                        _platform[i] = new Sprite(grassPlatform, destRect, sourceRectangle, Color.White);
+                        break;
+                    case 'z': // Moving platform (uses same texture as normal platform)
+                        sourceRectangle = new Rectangle(0, 0, grassPlatform.Width / 6, grassPlatform.Height);
+                        _platform[i] = new Sprite(grassPlatform, destRect, sourceRectangle, Color.White);
+                        break;
+                    //case 'o': // coin (not implemented here)
+                    //    sourceRectangle = new Rectangle(0, 0, coin.Width, coin.Height/4);
+                    //    _platform[i] = new Coin(coin, destRect, sourceRectangle, Color.White);
+                    //    break;
+                    case 'x': // Spike/trap
+                        sourceRectangle = new Rectangle(( spike.Width / 8 ) * 3, 0, spike.Width / 8, spike.Height);
+                        _platform[i] = new Spike(spike, destRect, sourceRectangle, Color.White);
+                        break;
+                    default:
+                        _platform[i] = null; // Empty space, no object
+                        break;
+                }
+            }
+
+        }
+
     }
 
 
     struct Level
     {
-        public string Layout;
+        public const string Layout =    "                                        " +
+                                        "                                        " +
+                                        "     -------               -------      " +
+                                        "                                        " +
+                                        "                                        " +
+                                        "                                        " +
+                                        "        zzz      -----       zzz        " +
+                                        "                                        " +
+                                        "                                        " +
+                                        "        x                               " +
+                                        "     -------      zzzz     -------      " +
+                                        "                                        " +
+                                        "                                        " +
+                                        "             xxx                        " +
+                                        "----------------------------------------";
         public int EnemyCount;
-        public Level(string layout, int enemyCount)
+        public Point[] EnemyPositions;
+
+        public Level(int enemyCount, Point[] enemyPositions)
         {
-            Layout = layout;
             EnemyCount = enemyCount;
+            EnemyPositions = enemyPositions;
         }
     }
 

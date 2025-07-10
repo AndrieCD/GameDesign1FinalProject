@@ -30,8 +30,9 @@ public class Game1 : Game
         SceneManager.WINHEIGHT = Window.ClientBounds.Height;
         SceneManager.SCENEWIDTH = Window.ClientBounds.Width * 2; // entire scene width is double the window width
         SceneManager.SCENEHEIGHT = Window.ClientBounds.Height * 2; // entire scene height is double the window height
+        SceneManager.CONTENT = Content; // set the content manager for SceneManager
 
-        _sceneManager = new SceneManager(Content); // initialize sprites in SceneManager constructor
+        _sceneManager = new SceneManager(); // initialize sprites in SceneManager constructor
 
         base.Initialize( );
     }
