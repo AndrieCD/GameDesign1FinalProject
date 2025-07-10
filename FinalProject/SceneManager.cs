@@ -35,17 +35,19 @@ namespace FinalProject
         Sprite _background;      // The background image
         Sprite[] _platform;      // Array of all platforms and traps in the scene
         Player _player;          // The player character
+        public Player Player => _player; // Read only access for HUD
+        public int CurrentLevel => _currentLevel; // level
 
         private Matrix _cameraTransform; // Used to move the camera for side-scrolling
 
         // < CONSTRUCTOR > -----------------------------------------------------------------
         // The constructor sets up the scene: loads textures, creates platforms, and places the player.
-        public SceneManager(ContentManager Content)
+        public SceneManager(GraphicsDevice graphicsDevice, ContentManager Content)
         {
             levels = InitializeLevels( );
             _currentLevel = 1;
             _sceneLayout = levels[_currentLevel].Layout;
-
+            
             ///// SPRITES //////
 
             // -- Background --
@@ -106,7 +108,7 @@ namespace FinalProject
                 _spriteHeight * 2        // Player is twice as tall as a platform
             );
             Rectangle plyrSource = new Rectangle(0, 0, plyrTexture.Width / 4, plyrTexture.Height / 7); // First frame of sprite sheet
-            _player = new Player(plyrTexture, plyrDest, plyrSource, Color.White); // Create the player
+            _player = new Player(graphicsDevice, plyrTexture, plyrDest, plyrSource, Color.White); // Create the player
         }
 
         // < PROPERTIES > -----------------------------------------------------------------

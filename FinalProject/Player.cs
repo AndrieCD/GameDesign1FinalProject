@@ -13,13 +13,25 @@ namespace FinalProject
         // This constant controls how much faster the player moves when sprinting.
         private const float SPRINT_MULTIPLIER = 1.5f; // multiplier for sprinting speed
 
+        // HUD
+        private Texture2D _healthbarTexture;
+        private Texture2D _healthbarBackground;
+        private Texture2D _borderTexture;
+
         // < Constructor > ---------------------------------------
         // This constructor sets up the player with its texture, position, and color.
         // It also creates a HUD (Heads-Up Display) for the player.
-        public Player(Texture2D texture, Rectangle destination, Rectangle source, Color color)
+        public Player(GraphicsDevice graphicsDevice, Texture2D texture, Rectangle destination, Rectangle source, Color color)
             : base(texture, destination, source, color)
         {
             HUD hUD = new HUD(this); // Create a HUD to display player info (like health).
+
+            _healthbarTexture = new Texture2D(graphicsDevice, 1, 1);
+            _healthbarTexture.SetData(new[] { Color.Green }); // Healthbar Color
+            _healthbarBackground = new Texture2D(graphicsDevice, 1, 1);
+            _healthbarBackground.SetData(new[] { Color.SaddleBrown }); // Bg healthbar Color
+            _borderTexture = new Texture2D(graphicsDevice, 1, 1);
+            _borderTexture.SetData(new[] { Color.SaddleBrown }); // Border Color
         }
 
         // < Methods > -------------------------------------
@@ -65,6 +77,54 @@ namespace FinalProject
             _isGrounded = true; // Player is now on the ground.
             _health = 100; // Restore full health.
         }
+
+        public void DrawHUD(SpriteBatch spriteBatch, int currentLevel)
+        {
+            // Fixed screen position (bottom left corner)
+            Vector2 hudPosition = new Vector2(35, SceneManager.WINHEIGHT - 50);
+
+            // Health bar background
+            int barWidth = 300;
+            int barHeight = 30;
+            int borderThickness = 5;
+
+            Rectangle bgRect = new Rectangle((int)hudPosition.X, (int)hudPosition.Y, barWidth, barHeight);
+            Rectangle healthRect = new Rectangle((int)hudPosition.X, (int)hudPosition.Y, (int)(barWidth * (_health / 100f)), barHeight);
+            // _health / 100f = to get the percentage, Multiply that by barWidth to shrink or grow the bar based on health.
+
+            // Border rectangles
+            Rectangle topBorder = new Rectangle(bgRect.X - borderThickness, bgRect.Y - borderThickness, bgRect.Width + 2 * borderThickness, borderThickness);
+            Rectangle bottomBorder = new Rectangle(bgRect.X - borderThickness, bgRect.Y + bgRect.Height, bgRect.Width + 2 * borderThickness, borderThickness);
+            Rectangle leftBorder = new Rectangle(bgRect.X - borderThickness, bgRect.Y, borderThickness, bgRect.Height);
+            Rectangle rightBorder = new Rectangle(bgRect.X + bgRect.Width, bgRect.Y, borderThickness, bgRect.Height);
+
+            spriteBatch.Begin();
+
+            // Draw border
+            spriteBatch.Draw(_borderTexture, topBorder, Color.White);
+            spriteBatch.Draw(_borderTexture, bottomBorder, Color.White);
+            spriteBatch.Draw(_borderTexture, leftBorder, Color.White);
+            spriteBatch.Draw(_borderTexture, rightBorder, Color.White);
+
+            // Draw health bar background and fill
+            spriteBatch.Draw(_healthbarBackground, bgRect, Color.White);
+            spriteBatch.Draw(_healthbarTexture, healthRect, Color.White);
+
+            // Draw Level Text - top center
+            string levelText = $"Level: {currentLevel}";
+            Vector2 levelTextSize = Game1.LevelFont.MeasureString(levelText);
+
+            // Centered on top middle of screen
+            Vector2 levelTextPos = new Vector2(
+                (SceneManager.WINWIDTH / 2f) - (levelTextSize.X / 2f), // center horizontally
+                15 // slight padding from the top
+            );
+            spriteBatch.DrawString(Game1.LevelFont, levelText, levelTextPos, Color.White);
+
+            spriteBatch.End();
+        }
+
+
 
         // This method checks for keyboard and mouse input and updates the player's movement and state.
         public void GetInputs(GameTime gameTime)
