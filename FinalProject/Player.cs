@@ -3,6 +3,7 @@ using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System.Diagnostics;
+using Microsoft.VisualBasic;
 
 namespace FinalProject
 {
@@ -19,6 +20,17 @@ namespace FinalProject
         private Texture2D _healthbarBackground;
         private Texture2D _borderTexture;
         private float _healTimer;
+        private static float _soundTimer = 0f;
+
+        // Dash
+        private float _dashCooldown = 3f; // Time before dash can be used again
+        private float _dashCooldownTimer = 0f;
+        private float _dashDistance = 50f; // How far the dash moves
+        private float _dashDuration = 0.15f; // Duration of dash in seconds
+        private float _dashTimer = 0f;
+        private bool _isDashing = false;
+        private bool _dashHitLanded = false;
+
 
         // < Constructor > ---------------------------------------
         // This constructor sets up the player with its texture, position, and color.
@@ -44,31 +56,65 @@ namespace FinalProject
         /// </summary>
         public override void Update(Sprite[] platforms, GameTime gameTime)
         {
+            if (_isDead) return;
             if (_health <= 0 && _state != CharState.Dead)
             {
-                _deathTimer = 1f;
+                _deathTimer = 0.75f;
                 ChangeState(CharState.Dead);
-                HandleDeathState(gameTime);
-                return;
+                SoundManager.PlayDeathSound( );
             }
+            HandleDeathState(gameTime);
             PassiveHeal(gameTime);
             HandleHurtState(gameTime);
             HandleAttackState(gameTime);
             ChangePosition(platforms);
             HandleInput(gameTime);
+            Debug.WriteLine($"IsDead: {_isDead}, CharState: {_state}, DeathTimer {_deathTimer}");
 
             PlayAnimation(_state);
+
+            _dashCooldownTimer -= (float)gameTime.ElapsedGameTime.TotalSeconds;
+            if (_isDashing)
+            {
+                // Check hitbox during dash
+                Rectangle hitBox = GetCharacterBounds(Destination.Location);
+                hitBox.Location = new Point(hitBox.X + ( hitBox.Width / 2 ) * _direction, hitBox.Y);
+                hitBox.Width = hitBox.Width / 2;
+
+                foreach (Character enemy in SceneManager.Enemies)
+                {
+                    if (!_dashHitLanded && hitBox.Intersects(enemy.Destination))
+                    {
+                        enemy.TakeDamage(20); // Or use _attackDamage if you want consistent values
+                        SoundManager.PlayHitSound( );
+                        _dashHitLanded = true;
+                        break;
+                    }
+                }
+
+                _dashTimer -= (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+                // Disable dash after time expires
+                if (_dashTimer <= 0f)
+                {
+                    _isDashing = false;
+                    _velocity.X = 0f;
+                    _dashHitLanded = false; // Reset dash hit detection
+                }
+            }
+            if (_dashCooldownTimer < 0f) _dashCooldownTimer = 0f;
         }
 
         private void PassiveHeal(GameTime gameTime)
         {
-            if (_health < 100 && _health > 0)
+            if (_health < 100 && _health > 0 && !_isDead)
             {
                 _healTimer -= (float)gameTime.ElapsedGameTime.TotalSeconds; // Decrease timer by 1 second
                 if (_healTimer <= 0f)
                 {
                     _health += 10;
-                    _healTimer = 3f; // Reset heal timer to 3 seconds
+                    Math.Clamp(_health, 0, 100);
+                    _healTimer = 4f; 
                 }
             }
         }
@@ -79,16 +125,13 @@ namespace FinalProject
         public override void HandleDeathState(GameTime gameTime)
         {
             _deathTimer -= (float)gameTime.ElapsedGameTime.TotalSeconds;
-            if (_deathTimer <= 0f)
+            if (_deathTimer <= 0f && _state == CharState.Dead)
             {
-                _destination.Location = _originalLocation;
-                _velocity.Y = 0f;
-                _isGrounded = true;
-                _health = 100;
+                _isDead = true;
             }
         }
 
-        public void DrawHUD(SpriteBatch spriteBatch, int currentLevel)
+        public void DrawHUD(SpriteBatch spriteBatch, int currentLevel, int enemyCount)
         {
             // Fixed screen position (bottom left corner)
             Vector2 hudPosition = new Vector2(35, SceneManager.WINHEIGHT - 50);
@@ -131,6 +174,17 @@ namespace FinalProject
             );
             spriteBatch.DrawString(Game1.LevelFont, levelText, levelTextPos, Color.White);
 
+            // Remaining enemies
+            string enemyText = $"Enemies Remaining: {enemyCount}";
+            Vector2 enemyTextSize = Game1.LevelFont.MeasureString(enemyText);
+
+            // Centered below the level text
+            Vector2 enemyTextPos = new Vector2(
+                ( SceneManager.WINWIDTH / 2f ) - ( enemyTextSize.X / 2f ), // center horizontally
+                levelTextPos.Y + levelTextSize.Y + 5 // slight padding below level text
+            );
+            spriteBatch.DrawString(Game1.LevelFont, enemyText, enemyTextPos, Color.White);
+
             spriteBatch.End();
         }
            
@@ -140,6 +194,8 @@ namespace FinalProject
         /// </summary>
         private void HandleInput(GameTime gameTime)
         {
+            if (_isDashing) return; // Ignore movement input during dash
+
             KeyboardState keyboardState = Keyboard.GetState( );
             MouseState mouseState = Mouse.GetState( );
 
@@ -154,11 +210,26 @@ namespace FinalProject
                 HandleAttackInput(mouseState, gameTime);
             }
 
+            if (_health > 0 && keyboardState.IsKeyDown(Keys.Q) && _dashCooldownTimer <= 0f)
+            {
+                PerformDash( );
+            }
+
 
             UpdateStateBasedOnInput(keyboardState);
             _attackCD -= (float)gameTime.ElapsedGameTime.TotalSeconds;
             if (_attackCD < 0f) _attackCD = 0f;
         }
+
+        private void PerformDash( )
+        {
+            _isDashing = true;
+            _dashTimer = _dashDuration;
+            _velocity.X = _direction * _dashDistance; // High velocity for dash
+            _dashCooldownTimer = _dashCooldown;
+            SoundManager.PlaySwordSwing( ); // or PlayDashSound if you have one
+        }
+
 
         /// <summary>
         /// Handles the logic for when the player is attacking.
@@ -222,6 +293,25 @@ namespace FinalProject
             if (keyboardState.IsKeyDown(Keys.LeftShift))
             {
                 _velocity.X *= SPRINT_MULTIPLIER;
+                if (_soundTimer > 0f)
+                {
+                    _soundTimer -= 0.025f; // Decrease the timer to prevent spamming the sound
+                    return; // Exit if the timer is still active
+                }
+                if (_velocity.X == 0f) return; // Don't play sound if not moving
+                _soundTimer = 0.4f; // Reset the sound timer
+                SoundManager.PlayWalkSound( ); // Play the walk sound
+
+            } else
+            {
+                if (_soundTimer > 0f)
+                {
+                    _soundTimer -= 0.025f; // Decrease the timer to prevent spamming the sound
+                    return; // Exit if the timer is still active
+                }
+                if (_velocity.X == 0f) return; // Don't play sound if not moving
+                _soundTimer = 0.7f; // Reset the sound timer
+                SoundManager.PlayWalkSound( ); // Play the walk sound
             }
         }
 
@@ -231,6 +321,7 @@ namespace FinalProject
             {
                 _velocity.Y = -JUMP_POWER;
                 _isGrounded = false;
+                SoundManager.PlayJumpSound( );
             }
         }
 

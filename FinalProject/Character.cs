@@ -40,6 +40,10 @@ namespace FinalProject
         protected readonly int _frameWidth;
         protected readonly int _frameHeight;
 
+        // --- Status ---
+        protected bool _isDead = false;
+        public bool IsDead { get => _isDead; set => _isDead = value; }
+
         // --- Action Timers ---
         protected bool _isHurt;
         protected float _hurtTimer;
@@ -48,6 +52,7 @@ namespace FinalProject
         protected float _attackCD;
         protected float _deathTimer = 0f;
         protected float _attackDamage;
+        protected float _spikeTimer = 0f;
 
         // --- Constants ---
         protected const float HURT_DURATION = 0.25f;
@@ -139,14 +144,14 @@ namespace FinalProject
         /// <summary>
         /// Reduces health and triggers hurt state.
         /// </summary>
-        public virtual void TakeDamage(int damage)
+        public virtual void TakeDamage(int damage, bool ignoreIFrames = false)
         {
-            if (_health > 0 && !_isHurt)
+            if (_health > 0 && ( !_isHurt || ignoreIFrames ))
             {
+                _health -= damage;
                 _isHurt = true;
                 _hurtTimer = HURT_DURATION;
                 ChangeState(CharState.Hurt);
-                _health -= damage;
                 Debug.WriteLine($"Took {damage} damage! Remaining health: {_health}");
             }
         }
@@ -176,6 +181,8 @@ namespace FinalProject
 
             if (!_isGrounded)
                 _velocity.Y += GRAVITY;
+
+            
 
             Point newPos = HandleCollisions(platforms);
             newPos.X = Math.Clamp(newPos.X, 0 - OFFSET, SceneManager.SCENEWIDTH - _destination.Width + OFFSET);
@@ -217,7 +224,12 @@ namespace FinalProject
                 {
                     if (tile is Spike)
                     {
-                        if (this is Player) TakeDamage(Spike.Damage);
+                        _spikeTimer -= 0.075f;
+                        if (this is Player && _spikeTimer <= 0)
+                        {
+                            _spikeTimer = 0.5f; // Reset spike timer to prevent multiple hits
+                            TakeDamage(Spike.Damage, true);
+                        }
                         continue;
                     }
                     if (_velocity.X > 0)
@@ -238,10 +250,11 @@ namespace FinalProject
                 {
                     if (tile is Spike)
                     {
-                        if (tile is Spike)
+                        _spikeTimer -= 0.075f;
+                        if (this is Player && _spikeTimer <= 0)
                         {
-                            if (this is Player) TakeDamage(Spike.Damage);
-                            continue;
+                            _spikeTimer = 0.5f; // Reset spike timer to prevent multiple hits
+                            TakeDamage(Spike.Damage, true);
                         }
                         continue;
                     }
@@ -250,6 +263,7 @@ namespace FinalProject
                         newPos.Y = tile.Destination.Top - _destination.Height;
                         _isGrounded = true;
                         _velocity.Y = 0;
+                        
                     } else if (_velocity.Y < 0)
                     {
                         newPos.Y = tile.Destination.Bottom;

@@ -7,13 +7,20 @@ public class MenuManager
 {
     Game1 _game;
     SpriteFont _font;
-    Texture2D _menuBg;
+    Texture2D _menuBg, _gameOverBg, _victoryBg;
+    Texture2D backMainTex;
+    Color backMainCol;
 
     public MenuManager(Game1 game)
     {
         _game = game;
         _font = game.Content.Load<SpriteFont>("LevelFont");
         _menuBg = game.Content.Load<Texture2D>("MenuBackground");
+        _gameOverBg = game.Content.Load<Texture2D>("GO_1");
+        _victoryBg = game.Content.Load<Texture2D>("YW_1");
+
+        backMainTex = game.Content.Load<Texture2D>("BackMain");
+        backMainCol = Color.White;
     }
 
     public void UpdateMainMenu(GameTime gameTime)
@@ -27,7 +34,7 @@ public class MenuManager
             SceneManager.SCENEHEIGHT = _game.Window.ClientBounds.Height * 2; // entire scene height is double the window height
             SceneManager.CONTENT = _game.Content; // set the content manager for SceneManager
             SceneManager.graphicsDevice = _game.GraphicsDevice; // set the graphics device for SceneManager
-            _game._sceneManager = new SceneManager( ); // initialize sprites in SceneManager constructor
+            _game._sceneManager = new SceneManager(_game); // initialize sprites in SceneManager constructor
 
             _game._gameState = GameState.Playing;
         }
@@ -49,14 +56,26 @@ public class MenuManager
 
     public void UpdateGameOverMenu(GameTime gameTime)
     {
-        if (Keyboard.GetState( ).IsKeyDown(Keys.Enter))
-            _game._gameState = GameState.MainMenu;
+        MouseState mouseState = Mouse.GetState( );
+
+        if (new Rectangle(SceneManager.WINWIDTH / 4, SceneManager.WINHEIGHT - 250, 550, 100).Contains(mouseState.Position))
+        {
+            backMainCol = Color.Yellow;
+            if (mouseState.LeftButton == ButtonState.Pressed)
+                _game._gameState = GameState.MainMenu;
+        } else backMainCol = Color.White;
     }
 
     public void UpdateVictoryMenu(GameTime gameTime)
     {
-        if (Keyboard.GetState( ).IsKeyDown(Keys.Enter))
-            _game._gameState = GameState.MainMenu;
+        MouseState mouseState = Mouse.GetState( );
+
+        if (new Rectangle(SceneManager.WINWIDTH / 4, SceneManager.WINHEIGHT - 250, 550, 100).Contains(mouseState.Position))
+        {
+            backMainCol = Color.Yellow;
+            if (mouseState.LeftButton == ButtonState.Pressed)
+                _game._gameState = GameState.MainMenu;
+        } else backMainCol = Color.White;
     }
 
     public void DrawMainMenu(SpriteBatch sb)
@@ -77,14 +96,16 @@ public class MenuManager
     public void DrawGameOverMenu(SpriteBatch sb)
     {
         sb.Begin( );
-        sb.DrawString(_font, "Game Over\nPress ENTER to return to Menu", new Vector2(250, 300), Color.Red);
+        sb.Draw(_gameOverBg, new Rectangle(0, 0, _game.Window.ClientBounds.Width, _game.Window.ClientBounds.Height), Color.White);
+        sb.Draw(backMainTex, new Rectangle(SceneManager.WINWIDTH / 4, SceneManager.WINHEIGHT - 250, 550, 100), backMainCol);
         sb.End( );
     }
 
     public void DrawVictoryMenu(SpriteBatch sb)
     {
         sb.Begin( );
-        sb.DrawString(_font, "Victory!\nPress ENTER to return to Menu", new Vector2(250, 300), Color.Green);
+        sb.Draw(_victoryBg, new Rectangle(0, 0, _game.Window.ClientBounds.Width, _game.Window.ClientBounds.Height), Color.White);
+        //sb.Draw(backMainTex, backMainRect, Color.White);
         sb.End( );
     }
 }

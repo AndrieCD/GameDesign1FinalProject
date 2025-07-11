@@ -15,10 +15,6 @@ namespace FinalProject
         private enum EnemyState { Roaming, Chasing, Attacking }
         private EnemyState _aiState = EnemyState.Roaming;
 
-        // --- Status ---
-        private bool _isDead = false;
-        public bool IsDead { get => _isDead; set => _isDead = value; }
-
         // --- AI Timers ---
         private float _walkTimer = 0f, _walkDuration = 0f;
         private float _idleTimer = 0f, _idleDuration = 0f;
@@ -54,6 +50,7 @@ namespace FinalProject
             {
                 _deathTimer = 0.75f;
                 ChangeState(CharState.Dead);
+                SoundManager.PlayDeathSound( );
             }
 
             HandleDeathState(gameTime);
@@ -63,7 +60,6 @@ namespace FinalProject
             HandleAI(gameTime, platforms);
             ChangePosition(platforms);
             HandleVerticalStates( );
-            Debug.WriteLine($"AI State: {_aiState}, _attacking: {_attacking}, CharState: {_state}, _attackCD {_attackCD}");
             PlayAnimation(_state);
             _attackCD -= (float)gameTime.ElapsedGameTime.TotalSeconds;
             if (_attackCD < 0f) _attackCD = 0f;
@@ -76,7 +72,9 @@ namespace FinalProject
         {
             _deathTimer -= (float)gameTime.ElapsedGameTime.TotalSeconds;
             if (_deathTimer <= 0f && _state == CharState.Dead)
+            {
                 _isDead = true;
+            }
         }
 
         /// <summary>
@@ -206,7 +204,7 @@ namespace FinalProject
                 bool hitSomeone = false; // to detect if the enemy is hit
                 if (!_hitLandedThisAttack && hitBox.Intersects(_player.Destination))
                 {
-                    _player.TakeDamage((int)_attackDamage);
+                    _player.TakeDamage((int)_attackDamage, true);
                     SoundManager.PlayHitSound( );
                     _hitLandedThisAttack = true; // true if attack landed on enemy
                     hitSomeone = true; // enemy is hit = true

@@ -40,9 +40,12 @@ namespace FinalProject
         private Texture2D platformBlocks, spike;
         private Matrix _cameraTransform;
 
+        private Game1 _game;
+
         // --- Constructor ---
-        public SceneManager( )
+        public SceneManager(Game1 game)
         {
+            _game = game;
             Debug.WriteLine($"{SCENEHEIGHT} | {SCENEWIDTH}");
             LoadTextures( );
             InitializePlayer( );
@@ -81,7 +84,7 @@ namespace FinalProject
             _player = new Player(graphicsDevice, plyrTexture, plyrDest, plyrSource, Color.White);
         }
 
-        public static Level[] InitializeLevels( ) => new Level[] { new Level(1), new Level(6) };
+        public static Level[] InitializeLevels( ) => new Level[] { new Level(3), new Level(7) };
 
         public void CreatePlatforms( )
         {
@@ -152,11 +155,7 @@ namespace FinalProject
 
         public void Update(GameTime gameTime)
         {
-            if (_player.Health <= 0)
-            {
-
-                //return; // Player is dead, no further action needed
-            }
+            if (_player.IsDead) _game._gameState = GameState.GameOver;
             _player.Update(_platform, gameTime);
 
             // Update moving platforms
@@ -239,6 +238,19 @@ namespace FinalProject
             cameraPosition.Y = MathHelper.Clamp(cameraPosition.Y, 0, SCENEHEIGHT / 2);
             _cameraTransform = Matrix.CreateTranslation(new Vector3(-cameraPosition, 0));
         }
+
+        public int GetEnemyCount( )
+        {
+            int enemyCount = 0;
+            foreach (Enemy enemy in Enemies)
+            {
+                if (!enemy.IsDead)
+                {
+                    enemyCount++;
+                }
+            }
+            return enemyCount;
+        }
     }
 
     /// <summary>
@@ -247,29 +259,29 @@ namespace FinalProject
     public struct Level
     {
         public const string Layout =
-            "                                        " +
-            "                                        " +
-            "                                        " +
-            "                                        " +
-            "         Y        Y  Y          Y       " +
-            "                                        " +
-            "      zzzzz     ---------    zzzzz      " +    // c for static sand
             "                                        " +    // Y for spawn points
-            "zz       Y          Y          Y      zz" +    // - for thin platforms
+            "         Y                     Y        " +    // - for thin platforms
             "             xx          xx             " +    // z for moving platforms
-            "     -----------------------------      " +    // x for spikes
+            "     -----------------------------      " +    // c for static sand
             "                                        " +
-            "zz                                    zz" +
+            "                                        " +    // x for spikes
             "                                        " +
-            "        zzz      -------     zzz        " +
-            "                                        " +
-            "                               Y        " +
-            "        x                     x         " +
-            "     -----    zz  zzzz zz    -----      " +
+            "----             -------            ----" +
+            "                    Y                   " +
             "                                        " +
             "                                        " +
-            "c  Y               xx               Y  c" +
-            "ccc      x    cccccccccccc    x      ccc" +
+            "      zzz      --  --  --      zzz      " +
+            "                                        " +
+            "                                        " +
+            "   x                                x   " +
+            "------    zzz     -----    zzz    ------" +
+            "                                        " +
+            "                                        " +
+            "              x         x               " +
+            "     zzzz     --  ---- --     zzzz      " +
+            "                                        " +
+            "   Y                                Y   " +
+            "ccc      x         xx         x      ccc" +
             "cccccccccccccccccccccccccccccccccccccccc";
         public int EnemyCount;
 

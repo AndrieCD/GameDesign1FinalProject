@@ -20,6 +20,7 @@ public class Game1 : Game
     private GraphicsDeviceManager _graphics;
     public static ContentManager content;
     public static SpriteFont LevelFont;
+    public static GameTime _gameTime;
     private SpriteBatch _spriteBatch;
 
     // SceneManager will be used to create a scene (layout of sprites)
@@ -102,7 +103,7 @@ public class Game1 : Game
 
             case GameState.Playing:
                 _sceneManager.Draw(_spriteBatch);
-                _sceneManager.Player.DrawHUD(_spriteBatch, _sceneManager.CurrentLevel); //HUD
+                _sceneManager.Player.DrawHUD(_spriteBatch, _sceneManager.CurrentLevel, _sceneManager.GetEnemyCount()); //HUD
                 break;
 
             case GameState.Paused:
@@ -121,5 +122,10 @@ public class Game1 : Game
 
 
         base.Draw(gameTime);
+    }
+
+    public void ResetGame( )
+    {
+        Initialize( );
     }
 }
