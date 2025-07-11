@@ -12,14 +12,13 @@ namespace FinalProject
     /// </summary>
     public class Player : Character
     {
-        private const float SPRINT_MULTIPLIER = 2f; // Multiplier for sprinting speed
+        private const float SPRINT_MULTIPLIER = 2.5f; // Multiplier for sprinting speed
 
         // HUD
         private Texture2D _healthbarTexture;
         private Texture2D _healthbarBackground;
         private Texture2D _borderTexture;
-
-        
+        private float _healTimer;
 
         // < Constructor > ---------------------------------------
         // This constructor sets up the player with its texture, position, and color.
@@ -28,9 +27,8 @@ namespace FinalProject
             : base(texture, destination, source, color)
         {
             _health = 100;
-            _ = new HUD(this); // Create a HUD to display player info (like health)
-            HUD hUD = new HUD(this); // Create a HUD to display player info (like health).
-
+            _attackDamage = 20;
+            _healTimer = 3f; // Timer for passive healing every 5 seconds
             _healthbarTexture = new Texture2D(graphicsDevice, 1, 1);
             _healthbarTexture.SetData(new[] { Color.Green }); // Healthbar Color
             _healthbarBackground = new Texture2D(graphicsDevice, 1, 1);
@@ -53,13 +51,26 @@ namespace FinalProject
                 HandleDeathState(gameTime);
                 return;
             }
-
+            PassiveHeal(gameTime);
             HandleHurtState(gameTime);
             HandleAttackState(gameTime);
             ChangePosition(platforms);
             HandleInput(gameTime);
 
             PlayAnimation(_state);
+        }
+
+        private void PassiveHeal(GameTime gameTime)
+        {
+            if (_health < 100 && _health > 0)
+            {
+                _healTimer -= (float)gameTime.ElapsedGameTime.TotalSeconds; // Decrease timer by 1 second
+                if (_healTimer <= 0f)
+                {
+                    _health += 10;
+                    _healTimer = 3f; // Reset heal timer to 3 seconds
+                }
+            }
         }
 
         /// <summary>

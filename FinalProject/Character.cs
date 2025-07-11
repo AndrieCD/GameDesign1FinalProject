@@ -47,11 +47,12 @@ namespace FinalProject
         protected float _attackTimer;
         protected float _attackCD;
         protected float _deathTimer = 0f;
+        protected float _attackDamage;
 
         // --- Constants ---
         protected const float HURT_DURATION = 0.25f;
         protected const int OFFSET = 50;
-        protected const float SPEED = 5f;
+        protected const float SPEED = 3f;
         protected const float GRAVITY = 1f;
         protected const float JUMP_POWER = 25f;
 
@@ -262,7 +263,7 @@ namespace FinalProject
         /// <summary>
         /// Selects and displays the correct animation frame based on the player's state.
         /// </summary>
-        public void PlayAnimation(CharState state)
+        protected virtual void PlayAnimation(CharState state)
         {
             int framesPerRow = 4;
             int startFrame, endFrame;
@@ -285,7 +286,7 @@ namespace FinalProject
         /// <summary>
         /// Determines the animation frame range and speed for a given state.
         /// </summary>
-        private void GetAnimationFrameRange(CharState state, out int startFrame, out int endFrame, ref int speed)
+        protected virtual void GetAnimationFrameRange(CharState state, out int startFrame, out int endFrame, ref int speed)
         {
             switch (state)
             {

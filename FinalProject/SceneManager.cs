@@ -72,8 +72,8 @@ namespace FinalProject
         {
             Texture2D plyrTexture = CONTENT.Load<Texture2D>("PlayerSprites");
             Rectangle plyrDest = new Rectangle(
-                _spriteWidth * 11,
-                WINHEIGHT - ( _spriteHeight * 7 ),
+                _spriteWidth * 20,
+                SCENEHEIGHT - ( _spriteHeight * 10 ),
                 _spriteWidth * 2,
                 _spriteHeight * 2
             );
@@ -96,8 +96,8 @@ namespace FinalProject
                 switch (tile)
                 {
                     case '-':
-                        sourceRectangle = new Rectangle(platformBlocks.Width / 3 * 0, 0, platformBlocks.Width / 3, platformBlocks.Height);
-                        _platform[i] = new Sprite(platformBlocks, destRect, sourceRectangle, Color.White);
+                        sourceRectangle = new Rectangle(platformBlocks.Width / 3 * 0, 0, platformBlocks.Width / 3, platformBlocks.Height/3);
+                        _platform[i] = new Sprite(platformBlocks, new Rectangle(x, y, _spriteWidth, _spriteHeight/4), sourceRectangle, Color.White);
                         break;
                     case 'z':
                         sourceRectangle = new Rectangle(platformBlocks.Width / 3 * 2, 0, platformBlocks.Width / 3, platformBlocks.Height);
@@ -251,25 +251,25 @@ namespace FinalProject
             "                                        " +
             "                                        " +
             "                                        " +
-            "         Y        Y                     " +
+            "         Y        Y  Y          Y       " +
             "                                        " +
-            "        zzz      -----       zzz Y      " +
+            "      zzzzz     ---------    zzzzz      " +    // c for static sand
+            "                                        " +    // Y for spawn points
+            "zz       Y          Y          Y      zz" +    // - for thin platforms
+            "             xx          xx             " +    // z for moving platforms
+            "     -----------------------------      " +    // x for spikes
             "                                        " +
-            "         Y                     Y        " +
+            "zz                                    zz" +
             "                                        " +
-            "     -------               -------      " +
+            "        zzz      -------     zzz        " +
             "                                        " +
-            "         Y        Y                     " +
+            "                               Y        " +
+            "        x                     x         " +
+            "     -----    zz  zzzz zz    -----      " +
             "                                        " +
-            "        zzz      -----       zzz Y      " +
             "                                        " +
-            "                                 -      " +
-            "        x                        -      " +
-            "     -------      zzzz     -------      " +
-            "                                        " +
-            "                         c              " +
-            "c  Y          c          c         Y    " +
-            "ccc           c          c              " +
+            "c  Y               xx               Y  c" +
+            "ccc      x    cccccccccccc    x      ccc" +
             "cccccccccccccccccccccccccccccccccccccccc";
         public int EnemyCount;
 

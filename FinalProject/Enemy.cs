@@ -39,7 +39,7 @@ namespace FinalProject
         {
             _player = player;
             _health = 100;
-
+            _attackDamage = 20;
         }
 
         // --- Public Methods ---
@@ -181,7 +181,7 @@ namespace FinalProject
                 Jump( );
         }
 
-        private void HandleAttacking( )
+        protected virtual void HandleAttacking( )
         {
             if (_state != CharState.Attacking)
             {
@@ -206,7 +206,7 @@ namespace FinalProject
                 bool hitSomeone = false; // to detect if the enemy is hit
                 if (!_hitLandedThisAttack && hitBox.Intersects(_player.Destination))
                 {
-                    _player.TakeDamage(5);
+                    _player.TakeDamage((int)_attackDamage);
                     SoundManager.PlayHitSound( );
                     _hitLandedThisAttack = true; // true if attack landed on enemy
                     hitSomeone = true; // enemy is hit = true
