@@ -6,6 +6,15 @@ using Microsoft.Xna.Framework.Input;
 
 namespace FinalProject;
 
+public enum GameState
+{
+    MainMenu,
+    Playing,
+    Paused,
+    GameOver,
+    Victory
+}
+
 public class Game1 : Game
 {
     private GraphicsDeviceManager _graphics;
@@ -14,7 +23,9 @@ public class Game1 : Game
     private SpriteBatch _spriteBatch;
 
     // SceneManager will be used to create a scene (layout of sprites)
-    private SceneManager _sceneManager; // helps in "bundling" drawing of multiple sprites together
+    public SceneManager _sceneManager; // helps in "bundling" drawing of multiple sprites together
+    public MenuManager _menuManager;
+    public GameState _gameState;
 
     public Game1( )
     {
@@ -30,14 +41,8 @@ public class Game1 : Game
 
     protected override void Initialize( )
     {
-        // Initialize the SceneManager
-        SceneManager.WINWIDTH = Window.ClientBounds.Width;
-        SceneManager.WINHEIGHT = Window.ClientBounds.Height;
-        SceneManager.SCENEWIDTH = Window.ClientBounds.Width * 2; // entire scene width is double the window width
-        SceneManager.SCENEHEIGHT = Window.ClientBounds.Height * 2; // entire scene height is double the window height
-        SceneManager.CONTENT = Content; // set the content manager for SceneManager
-        SceneManager.graphicsDevice = GraphicsDevice; // set the graphics device for SceneManager
-        _sceneManager = new SceneManager(); // initialize sprites in SceneManager constructor
+        _gameState = GameState.MainMenu;
+        _menuManager = new MenuManager(this);
 
         base.Initialize( );
     }
@@ -53,7 +58,32 @@ public class Game1 : Game
     protected override void Update(GameTime gameTime)
     {
 
-        _sceneManager.Update(gameTime);
+        KeyboardState ks = Keyboard.GetState( );
+
+        switch (_gameState)
+        {
+            case GameState.MainMenu:
+                _menuManager.UpdateMainMenu(gameTime);
+                break;
+
+            case GameState.Playing:
+                if (ks.IsKeyDown(Keys.Escape))
+                    _gameState = GameState.Paused;
+                _sceneManager?.Update(gameTime);
+                break;
+
+            case GameState.Paused:
+                _menuManager.UpdatePauseMenu(gameTime);
+                break;
+
+            case GameState.GameOver:
+                _menuManager.UpdateGameOverMenu(gameTime);
+                break;
+
+            case GameState.Victory:
+                _menuManager.UpdateVictoryMenu(gameTime);
+                break;
+        }
 
         base.Update(gameTime);
     }
@@ -62,9 +92,31 @@ public class Game1 : Game
     {
         GraphicsDevice.Clear(Color.CornflowerBlue);
 
-        _sceneManager.Draw(_spriteBatch);
+        switch (_gameState)
+        {
+            case GameState.MainMenu:
+                _menuManager.DrawMainMenu(_spriteBatch);
+                break;
 
-        _sceneManager.Player.DrawHUD(_spriteBatch, _sceneManager.CurrentLevel); //HUD
+            case GameState.Playing:
+                _sceneManager?.Draw(_spriteBatch);
+                _sceneManager.Player.DrawHUD(_spriteBatch, _sceneManager.CurrentLevel); //HUD
+                break;
+
+            case GameState.Paused:
+                _sceneManager?.Draw(_spriteBatch); // Draw game under pause
+                _menuManager.DrawPauseMenu(_spriteBatch);
+                break;
+
+            case GameState.GameOver:
+                _menuManager.DrawGameOverMenu(_spriteBatch);
+                break;
+
+            case GameState.Victory:
+                _menuManager.DrawVictoryMenu(_spriteBatch);
+                break;
+        }
+
 
         base.Draw(gameTime);
     }

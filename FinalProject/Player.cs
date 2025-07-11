@@ -48,7 +48,7 @@ namespace FinalProject
             {
                 _deathTimer = 1f;
                 ChangeState(CharState.Dead);
-                Die(gameTime);
+                HandleDeathState(gameTime);
                 return;
             }
 
@@ -63,7 +63,7 @@ namespace FinalProject
         /// <summary>
         /// Handles the player's death animation and respawn.
         /// </summary>
-        public override void Die(GameTime gameTime)
+        public override void HandleDeathState(GameTime gameTime)
         {
             _deathTimer -= (float)gameTime.ElapsedGameTime.TotalSeconds;
             if (_deathTimer <= 0f)

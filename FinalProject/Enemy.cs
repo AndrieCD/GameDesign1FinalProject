@@ -49,14 +49,15 @@ namespace FinalProject
         /// </summary>
         public override void Update(Sprite[] platforms, GameTime gameTime)
         {
+            if (_isDead) return;
             if (_health <= 0 && _state != CharState.Dead)
             {
-                _deathTimer = 2f;
+                _deathTimer = 0.75f;
                 ChangeState(CharState.Dead);
-                Die(gameTime);
-                return;
             }
 
+            HandleDeathState(gameTime);
+            Debug.WriteLine($"Enemy Update: {_state}, Health: {_health}, IsDead: {_isDead}");
             HandleHurtState(gameTime);
             HandleAttackState(gameTime);
             HandleAI(gameTime, platforms);
@@ -71,10 +72,10 @@ namespace FinalProject
         /// <summary>
         /// Handles the enemy's death animation and sets IsDead when finished.
         /// </summary>
-        public override void Die(GameTime gameTime)
+        public override void HandleDeathState(GameTime gameTime)
         {
             _deathTimer -= (float)gameTime.ElapsedGameTime.TotalSeconds;
-            if (_deathTimer <= 0f)
+            if (_deathTimer <= 0f && _state == CharState.Dead)
                 _isDead = true;
         }
 

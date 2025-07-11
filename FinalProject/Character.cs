@@ -95,13 +95,14 @@ namespace FinalProject
         /// <summary>
         /// Called when the character dies. Must be implemented by subclasses.
         /// </summary>
-        public abstract void Die(GameTime gameTime);
+        public abstract void HandleDeathState(GameTime gameTime);
 
         /// <summary>
         /// Change the character's state and reset animation frame.
         /// </summary>
         public void ChangeState(CharState newState)
         {
+            if (_state == CharState.Dead) return;
             if (_state != newState)
             {
                 _previousState = _state;
@@ -284,7 +285,7 @@ namespace FinalProject
             switch (state)
             {
                 case CharState.Idle:
-                    startFrame = 0; endFrame = 2;
+                    startFrame = 0; endFrame = 3; speed = 9;
                     break;
                 case CharState.Jumping:
                     startFrame = 4; endFrame = 7;
@@ -306,7 +307,7 @@ namespace FinalProject
                     startFrame = 24; endFrame = 26; speed = 4;
                     break;
                 case CharState.Dead:
-                    startFrame = 20; endFrame = 23;
+                    startFrame = 20; endFrame = 23; speed = 14;
                     ChangeColor(Color.Gray);
                     break;
                 default:

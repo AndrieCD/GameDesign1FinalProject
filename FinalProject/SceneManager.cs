@@ -10,7 +10,7 @@ namespace FinalProject
     /// <summary>
     /// Manages the setup, update, and drawing of the game scene, including background, platforms, player, and camera.
     /// </summary>
-    class SceneManager
+    public class SceneManager
     {
         // --- Static Fields (Window/Scene Info) ---
         public static int WINWIDTH { get; set; }
@@ -20,9 +20,9 @@ namespace FinalProject
         public static ContentManager CONTENT { get; set; }
         public static List<Enemy> Enemies { get; set; }
         public static GraphicsDevice graphicsDevice;
-        public int CurrentLevel=> _currentLevel;
+        public int CurrentLevel => _currentLevel;
 
-        public Player Player => _player; 
+        public Player Player => _player;
 
         // --- Constants ---
         private const int _spriteWidth = 64;
@@ -37,16 +37,17 @@ namespace FinalProject
         private Sprite _background;
         private Sprite[] _platform;
         private Player _player;
-        private Texture2D grassPlatform, spike;
+        private Texture2D platformBlocks, spike;
         private Matrix _cameraTransform;
 
         // --- Constructor ---
         public SceneManager( )
         {
+            Debug.WriteLine($"{SCENEHEIGHT} | {SCENEWIDTH}");
             LoadTextures( );
             InitializePlayer( );
             _currentLevel = 0;
-            _levels = InitializeLevels( );
+            _levels = SceneManager.InitializeLevels( );
             _sceneLayout = Level.Layout;
             CreatePlatforms( );
             SpawnEnemies( );
@@ -56,12 +57,12 @@ namespace FinalProject
 
         private void LoadTextures( )
         {
-            grassPlatform = CONTENT.Load<Texture2D>("Platform 9");
+            platformBlocks = CONTENT.Load<Texture2D>("Blocks");
             spike = CONTENT.Load<Texture2D>("spike_trap_full");
-            Texture2D bgTexture = CONTENT.Load<Texture2D>("Game Background 6");
+            Texture2D bgTexture = CONTENT.Load<Texture2D>("GameBackground");
             _background = new Sprite(
                 bgTexture,
-                new Rectangle(0, 0, WINWIDTH * 2, WINHEIGHT * 2),
+                new Rectangle(0, 0, SCENEWIDTH, SCENEHEIGHT),
                 new Rectangle(0, 0, bgTexture.Width, bgTexture.Height),
                 Color.White
             );
@@ -80,7 +81,7 @@ namespace FinalProject
             _player = new Player(graphicsDevice, plyrTexture, plyrDest, plyrSource, Color.White);
         }
 
-        public Level[] InitializeLevels( ) => new Level[] { new Level(1), new Level(6) };
+        public static Level[] InitializeLevels( ) => new Level[] { new Level(1), new Level(6) };
 
         public void CreatePlatforms( )
         {
@@ -95,9 +96,16 @@ namespace FinalProject
                 switch (tile)
                 {
                     case '-':
+                        sourceRectangle = new Rectangle(platformBlocks.Width / 3 * 0, 0, platformBlocks.Width / 3, platformBlocks.Height);
+                        _platform[i] = new Sprite(platformBlocks, destRect, sourceRectangle, Color.White);
+                        break;
                     case 'z':
-                        sourceRectangle = new Rectangle(0, 0, grassPlatform.Width / 6, grassPlatform.Height);
-                        _platform[i] = new Sprite(grassPlatform, destRect, sourceRectangle, Color.White);
+                        sourceRectangle = new Rectangle(platformBlocks.Width / 3 * 2, 0, platformBlocks.Width / 3, platformBlocks.Height);
+                        _platform[i] = new Sprite(platformBlocks, destRect, sourceRectangle, Color.White);
+                        break;
+                    case 'c':
+                        sourceRectangle = new Rectangle(platformBlocks.Width / 3 * 2, 0, platformBlocks.Width / 3, platformBlocks.Height);
+                        _platform[i] = new Sprite(platformBlocks, destRect, sourceRectangle, Color.White);
                         break;
                     case 'x':
                         sourceRectangle = new Rectangle(( spike.Width / 8 ) * 3, 0, spike.Width / 8, spike.Height);
@@ -133,7 +141,7 @@ namespace FinalProject
                 Point pos = spawnPositions[index];
                 spawnPositions.RemoveAt(index);
 
-                Texture2D enemyTexture = CONTENT.Load<Texture2D>("PlayerSprites");
+                Texture2D enemyTexture = CONTENT.Load<Texture2D>("EnemySprite");
                 Rectangle dest = new Rectangle(pos.X, pos.Y, _spriteWidth * 2, _spriteHeight * 2);
                 Rectangle source = new Rectangle(0, 0, enemyTexture.Width / 4, enemyTexture.Height / 7);
                 Enemies.Add(new Enemy(enemyTexture, dest, source, Color.Gray, _player));
@@ -146,7 +154,7 @@ namespace FinalProject
         {
             if (_player.Health <= 0)
             {
-                
+
                 //return; // Player is dead, no further action needed
             }
             _player.Update(_platform, gameTime);
@@ -160,10 +168,10 @@ namespace FinalProject
                     sprite.Move( );
             }
 
-             //Update enemies
+            //Update enemies
             for (int i = Enemies.Count - 1; i >= 0; i--)
             {
-                if (Enemies[i].State == CharState.Dead && Enemies[i].DeathTimer <= 0f)
+                if (Enemies[i].State == CharState.Dead && Enemies[i].IsDead)
                 {
                     Enemies.RemoveAt(i);
                     continue;
@@ -226,11 +234,9 @@ namespace FinalProject
         {
             Vector2 playerPos = new Vector2(_player.Destination.X, _player.Destination.Y);
             Vector2 cameraPosition = playerPos - new Vector2(WINWIDTH / 2, WINHEIGHT / 2);
-            int sceneHeightBounds = _spriteHeight * 6;
 
             cameraPosition.X = MathHelper.Clamp(cameraPosition.X, 0, SCENEWIDTH - WINWIDTH);
-            cameraPosition.Y = MathHelper.Clamp(cameraPosition.Y, -sceneHeightBounds, sceneHeightBounds - ( _spriteHeight * 3 ));
-
+            cameraPosition.Y = MathHelper.Clamp(cameraPosition.Y, 0, SCENEHEIGHT / 2);
             _cameraTransform = Matrix.CreateTranslation(new Vector3(-cameraPosition, 0));
         }
     }
@@ -238,9 +244,17 @@ namespace FinalProject
     /// <summary>
     /// Level struct holds the layout and enemy count for each level.
     /// </summary>
-    struct Level
+    public struct Level
     {
         public const string Layout =
+            "                                        " +
+            "                                        " +
+            "                                        " +
+            "                                        " +
+            "         Y        Y                     " +
+            "                                        " +
+            "        zzz      -----       zzz Y      " +
+            "                                        " +
             "         Y                     Y        " +
             "                                        " +
             "     -------               -------      " +
@@ -252,10 +266,11 @@ namespace FinalProject
             "                                 -      " +
             "        x                        -      " +
             "     -------      zzzz     -------      " +
-            "                         -              " +
-            "-  Y          -          -         Y    " +
-            "---           -          -              " +
-            "----------------------------------------";
+            "                                        " +
+            "                         c              " +
+            "c  Y          c          c         Y    " +
+            "ccc           c          c              " +
+            "cccccccccccccccccccccccccccccccccccccccc";
         public int EnemyCount;
 
         public Level(int enemyCount)
