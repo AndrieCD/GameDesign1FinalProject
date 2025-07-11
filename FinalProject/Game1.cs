@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using System;
 
 
 namespace FinalProject;
@@ -37,6 +38,8 @@ public class Game1 : Game
         _graphics.PreferredBackBufferHeight = 768; // set the height of the window
 
         content = Content;
+
+        this.Exiting += OnGameExiting;
     }
 
     protected override void Initialize( )
@@ -71,7 +74,7 @@ public class Game1 : Game
             case GameState.Playing:
                 if (ks.IsKeyDown(Keys.Escape))
                     _gameState = GameState.Paused;
-                _sceneManager?.Update(gameTime);
+                _sceneManager.Update(gameTime);
                 break;
 
             case GameState.Paused:
@@ -102,12 +105,12 @@ public class Game1 : Game
 
             case GameState.Playing:
                 _sceneManager?.Draw(_spriteBatch);
-                _sceneManager.Player.DrawHUD(_spriteBatch, _sceneManager.CurrentLevel); //HUD
+                _sceneManager.Player.DrawHUD(_spriteBatch, _sceneManager.CurrentLevel);
                 break;
 
             case GameState.Paused:
                 _sceneManager?.Draw(_spriteBatch); // Draw game under pause
-                _menuManager.DrawPauseMenu(_spriteBatch);
+                _menuManager?.DrawPauseMenu(_spriteBatch);
                 break;
 
             case GameState.GameOver:
@@ -120,6 +123,17 @@ public class Game1 : Game
         }
 
 
+
         base.Draw(gameTime);
     }
+
+    private void OnGameExiting(object sender, EventArgs e)
+    {
+        // Only save if currently playing
+        if (_gameState == GameState.Playing && _sceneManager != null)
+        {
+            SaveSystem.SaveGame(_sceneManager);
+        }
+    }
+
 }
