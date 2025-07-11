@@ -190,7 +190,7 @@ namespace FinalProject
                 {
                     _currentLevel++;
                     _sceneLayout = Level.Layout;
-                    CreatePlatforms( );
+                    //CreatePlatforms( );
                     SpawnEnemies( );
                 } else
                 {

@@ -71,7 +71,7 @@ public class Game1 : Game
             case GameState.Playing:
                 if (ks.IsKeyDown(Keys.Escape))
                     _gameState = GameState.Paused;
-                _sceneManager?.Update(gameTime);
+                _sceneManager.Update(gameTime);
                 break;
 
             case GameState.Paused:
@@ -101,12 +101,12 @@ public class Game1 : Game
                 break;
 
             case GameState.Playing:
-                _sceneManager?.Draw(_spriteBatch);
+                _sceneManager.Draw(_spriteBatch);
                 _sceneManager.Player.DrawHUD(_spriteBatch, _sceneManager.CurrentLevel); //HUD
                 break;
 
             case GameState.Paused:
-                _sceneManager?.Draw(_spriteBatch); // Draw game under pause
+                _sceneManager.Draw(_spriteBatch); // Draw game under pause
                 _menuManager.DrawPauseMenu(_spriteBatch);
                 break;
 

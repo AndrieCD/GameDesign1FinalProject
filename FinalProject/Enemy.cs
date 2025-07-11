@@ -57,13 +57,13 @@ namespace FinalProject
             }
 
             HandleDeathState(gameTime);
-            Debug.WriteLine($"Enemy Update: {_state}, Health: {_health}, IsDead: {_isDead}");
+            //Debug.WriteLine($"Enemy Update: {_state}, Health: {_health}, IsDead: {_isDead}");
             HandleHurtState(gameTime);
             HandleAttackState(gameTime);
             HandleAI(gameTime, platforms);
             ChangePosition(platforms);
             HandleVerticalStates( );
-            Debug.WriteLine($"State: {_state}");
+            Debug.WriteLine($"AI State: {_aiState}, _attacking: {_attacking}, CharState: {_state}, _attackCD {_attackCD}");
             PlayAnimation(_state);
             _attackCD -= (float)gameTime.ElapsedGameTime.TotalSeconds;
             if (_attackCD < 0f) _attackCD = 0f;
@@ -89,31 +89,43 @@ namespace FinalProject
         private void HandleAI(GameTime gameTime, Sprite[] platforms)
         {
             float delta = (float)gameTime.ElapsedGameTime.TotalSeconds;
-            if (_aiState != EnemyState.Attacking && _aiState != EnemyState.Chasing)
-                _aiState = EnemyState.Roaming;
 
+            // Calculate player position relative to the enemy
             float dx = _playerPosition.X - _destination.Center.X;
             float dy = Math.Abs(_playerPosition.Y - _destination.Center.Y);
-            bool playerInFront = ( _facingRight && dx > 0 ) || ( !_facingRight && dx < 0 );
+            float absDX = Math.Abs(dx);
 
-            if (_isHurt || ( Math.Abs(dx) < _detectionRange && dy < _detectionRange / 2 && playerInFront ))
+            // --- AI State Decision ---
+            if (absDX < _detectionRange && dy < _detectionRange / 2)
             {
-                if (!playerInFront)
-                    _facingRight = !_facingRight;
-
-                _aiState = ( Math.Abs(dx) < 60 && dy < 60 ) ? EnemyState.Attacking : EnemyState.Chasing;
+                _aiState = ( absDX < 60 && dy < 60 ) ? EnemyState.Attacking : EnemyState.Chasing;
+            } else
+            {
+                _aiState = EnemyState.Roaming;
             }
 
+            // --- Behavior Based on AI State ---
             switch (_aiState)
             {
-                case EnemyState.Roaming: HandleRoaming(delta, platforms); break;
-                case EnemyState.Chasing: HandleChasing(platforms); break;
+                case EnemyState.Roaming:
+                    HandleRoaming(delta, platforms);
+                    break;
+
+                case EnemyState.Chasing:
+                    HandleChasing(platforms);
+                    break;
+
                 case EnemyState.Attacking:
-                    if (_attackCD <= 0f) HandleAttacking( );
+                    if (!_attacking)
+                        if (_attackCD <= 0f) // Only attack if not on cooldown
+                            HandleAttacking( );
+                    else
+                        ChangeState(CharState.Idle); // If on cooldown, just idle
                     break;
             }
-            Debug.WriteLine($"AI State: {_aiState}");
+
         }
+
 
         private void HandleRoaming(float delta, Sprite[] platforms)
         {
@@ -171,15 +183,13 @@ namespace FinalProject
 
         private void HandleAttacking( )
         {
-            float dx = _playerPosition.X - _destination.Center.X;
-            bool playerInFront = ( _facingRight && dx > 0 ) || ( !_facingRight && dx < 0 );
-
-            if (_state != CharState.Attacking && playerInFront)
+            if (_state != CharState.Attacking)
             {
+                ChangeState(CharState.Attacking);
                 _attacking = true;
                 _attackTimer = 0.25f;
                 _attackCD = 1.5f; // Set cooldown here, only when attack is triggered
-                ChangeState(CharState.Attacking);
+                _hitLandedThisAttack = false; // resets to false on mouse click
             }
         }
 
@@ -194,7 +204,7 @@ namespace FinalProject
                 hitBox.Width = hitBox.Width / 2;
 
                 bool hitSomeone = false; // to detect if the enemy is hit
-                if (!_hitLandedThisAttack &&  hitBox.Intersects(_player.Destination))
+                if (!_hitLandedThisAttack && hitBox.Intersects(_player.Destination))
                 {
                     _player.TakeDamage(5);
                     SoundManager.PlayHitSound( );
@@ -214,6 +224,7 @@ namespace FinalProject
             } else
             {
                 _attacking = false;
+
             }
         }
 
