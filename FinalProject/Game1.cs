@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using System;
 
 
 namespace FinalProject;
@@ -38,6 +39,8 @@ public class Game1 : Game
         _graphics.PreferredBackBufferHeight = 768; // set the height of the window
 
         content = Content;
+
+        this.Exiting += OnGameExiting;
     }
 
     protected override void Initialize( )
@@ -122,8 +125,19 @@ public class Game1 : Game
         }
 
 
+
         base.Draw(gameTime);
     }
+
+    private void OnGameExiting(object sender, EventArgs e)
+    {
+        // Only save if currently playing
+        if (_gameState == GameState.Playing && _sceneManager != null)
+        {
+            SaveSystem.SaveGame(_sceneManager);
+        }
+    }
+
 
     public void ResetGame( )
     {
