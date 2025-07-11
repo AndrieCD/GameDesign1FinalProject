@@ -191,10 +191,24 @@ namespace FinalProject
                 Rectangle hitBox = GetCharacterBounds(_destination.Location);
                 hitBox.Location = new Point(hitBox.X + ( hitBox.Width / 2 ) * _direction, hitBox.Y);
                 hitBox.Width = hitBox.Width / 2;
-                if (hitBox.Intersects(_player.Destination))
+
+                bool hitSomeone = false; // to detect if the enemy is hit
+                if (!_hitLandedThisAttack &&  hitBox.Intersects(_player.Destination))
                 {
                     _player.TakeDamage(5);
+                    SoundManager.PlayHitSound( );
+                    _hitLandedThisAttack = true; // true if attack landed on enemy
+                    hitSomeone = true; // enemy is hit = true
                 }
+
+                // If no enemy was hit, play the sword swing
+                // I added this kasi ung hit.wav may kasama siyang sword swing
+                if (!hitSomeone && !_hitLandedThisAttack)
+                {
+                    SoundManager.PlaySwordSwing( );
+                    _hitLandedThisAttack = true; // set to true to not overlap sound effect
+                }
+
                 ChangeState(CharState.Attacking);
             } else
             {

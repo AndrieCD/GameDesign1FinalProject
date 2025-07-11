@@ -19,10 +19,7 @@ namespace FinalProject
         private Texture2D _healthbarBackground;
         private Texture2D _borderTexture;
 
-        // <---- SOUND EFFECTS ---->
-        // Hit sound effect (to only play once per hit)
-        // nagooverlap kasi siya sa bawat frame if wala this
-        private bool _hitLandedThisAttack = false; // resets to false
+        
 
         // < Constructor > ---------------------------------------
         // This constructor sets up the player with its texture, position, and color.

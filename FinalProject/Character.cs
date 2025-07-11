@@ -55,6 +55,11 @@ namespace FinalProject
         protected const float GRAVITY = 1f;
         protected const float JUMP_POWER = 25f;
 
+        // <---- SOUND EFFECTS ---->
+        // Hit sound effect (to only play once per hit)
+        // nagooverlap kasi siya sa bawat frame if wala this
+        protected bool _hitLandedThisAttack = false; // resets to false
+
         // --- Constructor ---
         protected Character(Texture2D texture, Rectangle destination, Rectangle source, Color color)
             : base(texture, destination, source, color)
