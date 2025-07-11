@@ -89,8 +89,8 @@ namespace FinalProject
         private void HandleAI(GameTime gameTime, Sprite[] platforms)
         {
             float delta = (float)gameTime.ElapsedGameTime.TotalSeconds;
-            _aiState = EnemyState.Roaming;
-            //ChangeState(CharState.Idle);
+            if (_aiState != EnemyState.Attacking && _aiState != EnemyState.Chasing)
+                _aiState = EnemyState.Roaming;
 
             float dx = _playerPosition.X - _destination.Center.X;
             float dy = Math.Abs(_playerPosition.Y - _destination.Center.Y);
@@ -112,6 +112,7 @@ namespace FinalProject
                     if (_attackCD <= 0f) HandleAttacking( );
                     break;
             }
+            Debug.WriteLine($"AI State: {_aiState}");
         }
 
         private void HandleRoaming(float delta, Sprite[] platforms)
@@ -145,7 +146,7 @@ namespace FinalProject
                 _facingRight = _rand.Next(0, 2) == 0 ? false : true;
             }
 
-            if (!IsGroundAhead(platforms) || IsGroundInFront(platforms))
+            if (!IsPlatformBelowNextStep(platforms) || IsWallAhead(platforms))
                 Jump( );
         }
 
@@ -164,7 +165,7 @@ namespace FinalProject
 
             ChangeState(CharState.Sprinting);
 
-            if (!IsGroundAhead(platforms) || IsGroundInFront(platforms))
+            if (!IsPlatformBelowNextStep(platforms) || IsWallAhead(platforms))
                 Jump( );
         }
 
@@ -228,7 +229,7 @@ namespace FinalProject
             }
         }
 
-        private bool IsGroundAhead(Sprite[] platforms)
+        private bool IsPlatformBelowNextStep(Sprite[] platforms)
         {
             if (_isGrounded) return true;
             int checkX = _facingRight ? _destination.Right + 5 : _destination.Left - 5;
@@ -243,7 +244,7 @@ namespace FinalProject
             return false;
         }
 
-        private bool IsGroundInFront(Sprite[] platforms)
+        private bool IsWallAhead(Sprite[] platforms)
         {
             int checkX = _facingRight ? _destination.Right + 5 : _destination.Left - 5;
             int checkY = _destination.Top + _destination.Height / 2;

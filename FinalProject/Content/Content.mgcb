@@ -13,13 +13,7 @@
 
 #---------------------------------- Content ---------------------------------#
 
-#begin bgmusic.mp3
-/importer:Mp3Importer
-/processor:SongProcessor
-/processorParam:Quality=Best
-/build:bgmusic.mp3
-
-#begin Game Background 6.png
+#begin ../../../../../Downloads/GameBackground.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -31,32 +25,11 @@
 /processorParam:TextureFormat=Color
 /build:../../../../../Downloads/GameBackground.png;GameBackground.png
 
-#begin hit.wav
-/importer:WavImporter
-/processor:SoundEffectProcessor
+#begin bgmusic.mp3
+/importer:Mp3Importer
+/processor:SongProcessor
 /processorParam:Quality=Best
-/build:hit.wav
-
-#begin landing.wav
-/importer:WavImporter
-/processor:SoundEffectProcessor
-/processorParam:Quality=Best
-/build:landing.wav
-
-#begin LevelFont.spritefont
-/importer:FontDescriptionImporter
-/processor:FontDescriptionProcessor
-#begin ../../../../../Downloads/PlayerSprites.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:ColorKeyColor=255,0,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=False
-/processorParam:PremultiplyAlpha=True
-/processorParam:ResizeToPowerOfTwo=False
-/processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
-/build:../../../../../Downloads/PlayerSprites.png;PlayerSprites.png
+/build:bgmusic.mp3
 
 #begin Blocks.png
 /importer:TextureImporter
@@ -82,6 +55,18 @@
 /processorParam:TextureFormat=Color
 /build:EnemySprite.png
 
+#begin hit.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:hit.wav
+
+#begin landing.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:landing.wav
+
 #begin LevelFont.spritefont
 /importer:FontDescriptionImporter
 /processor:FontDescriptionProcessor
@@ -100,6 +85,18 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:MenuBackground.png
+
+#begin PlayerSprites.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:PlayerSprites.png
 
 #begin spike_trap_full.png
 /importer:TextureImporter
