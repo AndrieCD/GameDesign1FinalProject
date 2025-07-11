@@ -13,6 +13,12 @@
 
 #---------------------------------- Content ---------------------------------#
 
+#begin bgmusic.mp3
+/importer:Mp3Importer
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:bgmusic.mp3
+
 #begin Game Background 6.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -24,6 +30,18 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:Game Background 6.png
+
+#begin hit.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:hit.wav
+
+#begin landing.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:landing.wav
 
 #begin LevelFont.spritefont
 /importer:FontDescriptionImporter
@@ -67,4 +85,10 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:spike_trap_full.png
+
+#begin swordSwing.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:swordSwing.wav
 

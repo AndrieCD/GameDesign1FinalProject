@@ -48,6 +48,8 @@ public class Game1 : Game
 
         LevelFont = Content.Load<SpriteFont>("LevelFont"); // Level Text
 
+        SoundManager.LoadContent(Content); // Load all sound files
+        SoundManager.PlayBackgroundMusic(); // Start BGM
     }
 
     protected override void Update(GameTime gameTime)
