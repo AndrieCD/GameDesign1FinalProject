@@ -193,7 +193,7 @@ namespace FinalProject
                     SpawnEnemies( );
                 } else
                 {
-                    Debug.WriteLine("Game Finished! All enemies defeated.");
+                    _game._gameState = GameState.Victory;
                 }
             }
         }

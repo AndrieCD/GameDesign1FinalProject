@@ -3,7 +3,6 @@ using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System.Diagnostics;
-using Microsoft.VisualBasic;
 
 namespace FinalProject
 {
@@ -105,6 +104,13 @@ namespace FinalProject
             if (_dashCooldownTimer < 0f) _dashCooldownTimer = 0f;
         }
 
+        public void HealOnKill()
+        {
+            int healing = 40;
+            _health += healing;
+            _health = Math.Clamp(_health, 0, 100); // Ensure health does not exceed 100
+        }
+
         private void PassiveHeal(GameTime gameTime)
         {
             if (_health < 100 && _health > 0 && !_isDead)
@@ -113,7 +119,7 @@ namespace FinalProject
                 if (_healTimer <= 0f)
                 {
                     _health += 10;
-                    Math.Clamp(_health, 0, 100);
+                    _health = Math.Clamp(_health, 0, 100);
                     _healTimer = 4f; 
                 }
             }

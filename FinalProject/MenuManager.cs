@@ -58,7 +58,7 @@ public class MenuManager
     {
         MouseState mouseState = Mouse.GetState( );
 
-        if (new Rectangle(SceneManager.WINWIDTH / 4, SceneManager.WINHEIGHT - 250, 550, 100).Contains(mouseState.Position))
+        if (new Rectangle(SceneManager.WINWIDTH / 4, SceneManager.WINHEIGHT - 250, 550, 80).Contains(mouseState.Position))
         {
             backMainCol = Color.Yellow;
             if (mouseState.LeftButton == ButtonState.Pressed)
@@ -70,7 +70,7 @@ public class MenuManager
     {
         MouseState mouseState = Mouse.GetState( );
 
-        if (new Rectangle(SceneManager.WINWIDTH / 4, SceneManager.WINHEIGHT - 250, 550, 100).Contains(mouseState.Position))
+        if (new Rectangle(SceneManager.WINWIDTH / 4, SceneManager.WINHEIGHT - 250, 550, 80).Contains(mouseState.Position))
         {
             backMainCol = Color.Yellow;
             if (mouseState.LeftButton == ButtonState.Pressed)
@@ -97,7 +97,7 @@ public class MenuManager
     {
         sb.Begin( );
         sb.Draw(_gameOverBg, new Rectangle(0, 0, _game.Window.ClientBounds.Width, _game.Window.ClientBounds.Height), Color.White);
-        sb.Draw(backMainTex, new Rectangle(SceneManager.WINWIDTH / 4, SceneManager.WINHEIGHT - 250, 550, 100), backMainCol);
+        sb.Draw(backMainTex, new Rectangle(SceneManager.WINWIDTH / 4, SceneManager.WINHEIGHT - 250, 550, 80), backMainCol);
         sb.End( );
     }
 
@@ -105,7 +105,7 @@ public class MenuManager
     {
         sb.Begin( );
         sb.Draw(_victoryBg, new Rectangle(0, 0, _game.Window.ClientBounds.Width, _game.Window.ClientBounds.Height), Color.White);
-        //sb.Draw(backMainTex, backMainRect, Color.White);
+        sb.Draw(backMainTex, new Rectangle(SceneManager.WINWIDTH / 4, SceneManager.WINHEIGHT - 250, 550, 80), backMainCol);
         sb.End( );
     }
 }

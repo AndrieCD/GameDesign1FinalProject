@@ -48,6 +48,7 @@ namespace FinalProject
             if (_isDead) return;
             if (_health <= 0 && _state != CharState.Dead)
             {
+                _player.HealOnKill( );
                 _deathTimer = 0.75f;
                 ChangeState(CharState.Dead);
                 SoundManager.PlayDeathSound( );

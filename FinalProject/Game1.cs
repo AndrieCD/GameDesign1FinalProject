@@ -44,7 +44,6 @@ public class Game1 : Game
     {
         _gameState = GameState.MainMenu;
         _menuManager = new MenuManager(this);
-
         base.Initialize( );
     }
 
@@ -55,7 +54,6 @@ public class Game1 : Game
         LevelFont = Content.Load<SpriteFont>("LevelFont"); // Level Text
 
         SoundManager.LoadContent(Content); // Load all sound files
-        SoundManager.PlayBackgroundMusic(); // Start BGM
     }
 
     protected override void Update(GameTime gameTime)
@@ -66,6 +64,7 @@ public class Game1 : Game
         switch (_gameState)
         {
             case GameState.MainMenu:
+                SoundManager.PlayBackgroundMusic( ); // Start BGM
                 _menuManager.UpdateMainMenu(gameTime);
                 break;
 
@@ -80,10 +79,12 @@ public class Game1 : Game
                 break;
 
             case GameState.GameOver:
+                SoundManager.StopBackgroundMusic( );
                 _menuManager.UpdateGameOverMenu(gameTime);
                 break;
 
             case GameState.Victory:
+                SoundManager.StopBackgroundMusic( );
                 _menuManager.UpdateVictoryMenu(gameTime);
                 break;
         }
