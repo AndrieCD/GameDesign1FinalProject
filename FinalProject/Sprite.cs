@@ -63,7 +63,7 @@ namespace FinalProject
 
     public class Spike : Sprite
     {
-        private const int DAMAGE = 1;
+        private const int DAMAGE = 5;
         public Spike(Texture2D texture, Rectangle destination, Rectangle source, Color color)
             : base(texture, destination, source, color)
         {

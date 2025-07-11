@@ -19,6 +19,7 @@ namespace FinalProject
         public static int SCENEHEIGHT { get; set; }
         public static ContentManager CONTENT { get; set; }
         public static List<Enemy> Enemies { get; set; }
+
         public static GraphicsDevice graphicsDevice;
         public int CurrentLevel => _currentLevel;
 
@@ -84,7 +85,7 @@ namespace FinalProject
             _player = new Player(graphicsDevice, plyrTexture, plyrDest, plyrSource, Color.White);
         }
 
-        public static Level[] InitializeLevels( ) => new Level[] { new Level(3), new Level(7) };
+        public static Level[] InitializeLevels( ) => new Level[] { new Level(1), new Level(7) };
 
         public void CreatePlatforms( )
         {
@@ -99,15 +100,16 @@ namespace FinalProject
                 switch (tile)
                 {
                     case '-':
-                        sourceRectangle = new Rectangle(platformBlocks.Width / 3 * 0, 0, platformBlocks.Width / 3, platformBlocks.Height/3);
-                        _platform[i] = new Sprite(platformBlocks, new Rectangle(x, y, _spriteWidth, _spriteHeight/4), sourceRectangle, Color.White);
-                        break;
                     case 'z':
-                        sourceRectangle = new Rectangle(platformBlocks.Width / 3 * 2, 0, platformBlocks.Width / 3, platformBlocks.Height);
-                        _platform[i] = new Sprite(platformBlocks, destRect, sourceRectangle, Color.White);
+                        sourceRectangle = new Rectangle(platformBlocks.Width / 4 * 0, 0, platformBlocks.Width / 4, platformBlocks.Height / 3);
+                        _platform[i] = new Sprite(platformBlocks, new Rectangle(x, y, _spriteWidth, _spriteHeight / 4), sourceRectangle, Color.White);
                         break;
                     case 'c':
-                        sourceRectangle = new Rectangle(platformBlocks.Width / 3 * 2, 0, platformBlocks.Width / 3, platformBlocks.Height);
+                        sourceRectangle = new Rectangle(platformBlocks.Width / 4 * 2, 0, platformBlocks.Width / 4, platformBlocks.Height);
+                        _platform[i] = new Sprite(platformBlocks, destRect, sourceRectangle, Color.White);
+                        break;
+                    case 'v':
+                        sourceRectangle = new Rectangle(platformBlocks.Width / 4 * 3, 0, platformBlocks.Width / 4, platformBlocks.Height);
                         _platform[i] = new Sprite(platformBlocks, destRect, sourceRectangle, Color.White);
                         break;
                     case 'x':
@@ -266,15 +268,15 @@ namespace FinalProject
             "                                        " +
             "                                        " +    // x for spikes
             "                                        " +
-            "----             -------            ----" +
+            "----             vvvvvvv            ----" +
             "                    Y                   " +
             "                                        " +
             "                                        " +
-            "      zzz      --  --  --      zzz      " +
+            "      zzz      vv  vv  vv      zzz      " +
             "                                        " +
             "                                        " +
             "   x                                x   " +
-            "------    zzz     -----    zzz    ------" +
+            "------    zzz     vvvvv    zzz    ------" +
             "                                        " +
             "                                        " +
             "              x         x               " +

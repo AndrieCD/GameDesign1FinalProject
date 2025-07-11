@@ -60,7 +60,7 @@ namespace FinalProject
             HandleAttackState(gameTime);
             HandleAI(gameTime, platforms);
             ChangePosition(platforms);
-            HandleVerticalStates( );
+            HandleFallJump( );
             PlayAnimation(_state);
             _attackCD -= (float)gameTime.ElapsedGameTime.TotalSeconds;
             if (_attackCD < 0f) _attackCD = 0f;
@@ -87,27 +87,24 @@ namespace FinalProject
 
         private void HandleAI(GameTime gameTime, Sprite[] platforms)
         {
-            float delta = (float)gameTime.ElapsedGameTime.TotalSeconds;
+            float deltaT = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
             // Calculate player position relative to the enemy
-            float dx = _playerPosition.X - _destination.Center.X;
-            float dy = Math.Abs(_playerPosition.Y - _destination.Center.Y);
-            float absDX = Math.Abs(dx);
+            float distanceX = Math.Abs(_playerPosition.X - _destination.Center.X);
+            float distanceY = Math.Abs(_playerPosition.Y - _destination.Center.Y);
 
             // --- AI State Decision ---
-            if (absDX < _detectionRange && dy < _detectionRange / 2)
+            if (distanceX < _detectionRange && distanceY < _detectionRange / 2)
             {
-                _aiState = ( absDX < 60 && dy < 60 ) ? EnemyState.Attacking : EnemyState.Chasing;
+                _aiState = ( distanceX < 60 && distanceY < 60 ) ? EnemyState.Attacking : EnemyState.Chasing;
             } else
-            {
                 _aiState = EnemyState.Roaming;
-            }
 
             // --- Behavior Based on AI State ---
             switch (_aiState)
             {
                 case EnemyState.Roaming:
-                    HandleRoaming(delta, platforms);
+                    HandleRoaming(deltaT, platforms);
                     break;
 
                 case EnemyState.Chasing:
@@ -125,12 +122,11 @@ namespace FinalProject
 
         }
 
-
-        private void HandleRoaming(float delta, Sprite[] platforms)
+        private void HandleRoaming(float deltaT, Sprite[] platforms)
         {
             if (_isIdle)
             {
-                _idleTimer += delta;
+                _idleTimer += deltaT;
                 _velocity.X = 0;
                 ChangeState(CharState.Idle);
 
@@ -143,7 +139,7 @@ namespace FinalProject
                 return;
             }
 
-            _walkTimer += delta;
+            _walkTimer += deltaT;
             _velocity.X = _facingRight ? SPEED : -SPEED;
             _direction = _facingRight ? 1 : -1;
             if (Velocity.Y == 0)
@@ -164,14 +160,14 @@ namespace FinalProject
         private void HandleChasing(Sprite[] platforms)
         {
             float chaseSpeed = SPEED * 2f;
-            float deadZone = 10f;
-            float dx = _playerPosition.X - _destination.X;
+            float ignoreDistance = 10f;
+            float distanceX = _playerPosition.X - _destination.X;
 
-            if (Math.Abs(dx) > deadZone)
+            if (Math.Abs(distanceX) > ignoreDistance)
             {
-                _velocity.X = dx > 0 ? chaseSpeed : -chaseSpeed;
-                _direction = dx > 0 ? 1 : -1;
-                _facingRight = dx > 0;
+                _velocity.X = distanceX > 0 ? chaseSpeed : -chaseSpeed;
+                _direction = distanceX > 0 ? 1 : -1;
+                _facingRight = distanceX > 0;
             }
 
             ChangeState(CharState.Sprinting);
@@ -268,7 +264,7 @@ namespace FinalProject
             return false;
         }
 
-        private void HandleVerticalStates( )
+        private void HandleFallJump( )
         {
             if (!_isGrounded)
             {

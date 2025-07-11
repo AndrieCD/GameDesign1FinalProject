@@ -84,7 +84,7 @@ namespace FinalProject
                 {
                     if (!_dashHitLanded && hitBox.Intersects(enemy.Destination))
                     {
-                        enemy.TakeDamage(20); // Or use _attackDamage if you want consistent values
+                        enemy.TakeDamage((int)_attackDamage*2); // Or use _attackDamage if you want consistent values
                         SoundManager.PlayHitSound( );
                         _dashHitLanded = true;
                         break;

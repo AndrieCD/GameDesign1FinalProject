@@ -224,10 +224,11 @@ namespace FinalProject
                 {
                     if (tile is Spike)
                     {
-                        _spikeTimer -= 0.075f;
+                        _spikeTimer -= 0.01f;
                         if (this is Player && _spikeTimer <= 0)
                         {
-                            _spikeTimer = 0.5f; // Reset spike timer to prevent multiple hits
+                            _spikeTimer = 1f; // Reset spike timer to prevent multiple hits
+                            SoundManager.PlayHitSound( );
                             TakeDamage(Spike.Damage, true);
                         }
                         continue;
@@ -250,10 +251,11 @@ namespace FinalProject
                 {
                     if (tile is Spike)
                     {
-                        _spikeTimer -= 0.075f;
+                        _spikeTimer -= 0.01f;
                         if (this is Player && _spikeTimer <= 0)
                         {
-                            _spikeTimer = 0.5f; // Reset spike timer to prevent multiple hits
+                            _spikeTimer = 1f; // Reset spike timer to prevent multiple hits
+                            SoundManager.PlayHitSound( );
                             TakeDamage(Spike.Damage, true);
                         }
                         continue;
@@ -277,31 +279,12 @@ namespace FinalProject
         /// <summary>
         /// Selects and displays the correct animation frame based on the player's state.
         /// </summary>
-        protected virtual void PlayAnimation(CharState state)
+        protected void PlayAnimation(CharState state)
         {
             int framesPerRow = 4;
             int startFrame, endFrame;
             int speed = 7;
 
-            GetAnimationFrameRange(state, out startFrame, out endFrame, ref speed);
-
-            if (frameCounter > speed)
-            {
-                int totalFrames = endFrame - startFrame + 1;
-                int currentIndex = ( frameCounter / speed ) % totalFrames;
-                int frameNumber = startFrame + currentIndex;
-                int frameX = ( frameNumber % framesPerRow ) * _frameWidth;
-                int frameY = ( frameNumber / framesPerRow ) * _frameHeight;
-                _source = new Rectangle(new Point(frameX, frameY), new Point(_frameWidth, _frameHeight));
-            }
-            frameCounter++;
-        }
-
-        /// <summary>
-        /// Determines the animation frame range and speed for a given state.
-        /// </summary>
-        protected virtual void GetAnimationFrameRange(CharState state, out int startFrame, out int endFrame, ref int speed)
-        {
             switch (state)
             {
                 case CharState.Idle:
@@ -334,6 +317,17 @@ namespace FinalProject
                     startFrame = 0; endFrame = 0;
                     break;
             }
+
+            if (frameCounter > speed)
+            {
+                int totalFrames = endFrame - startFrame + 1;
+                int currentIndex = ( frameCounter / speed ) % totalFrames;
+                int frameNumber = startFrame + currentIndex;
+                int frameX = ( frameNumber % framesPerRow ) * _frameWidth;
+                int frameY = ( frameNumber / framesPerRow ) * _frameHeight;
+                _source = new Rectangle(new Point(frameX, frameY), new Point(_frameWidth, _frameHeight));
+            }
+            frameCounter++;
         }
     }
 }
