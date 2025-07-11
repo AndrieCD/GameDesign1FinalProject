@@ -7,8 +7,8 @@ namespace FinalProject
 {
     public static class SoundManager
     {
-        private static SoundEffect _hitSound, _swordSwing, _walkSound, _jumpSound, _landSound, _deathSound;
-        private static Song _bgMusic;
+        private static SoundEffect _hitSound, _swordSwing, _walkSound, _jumpSound, _landSound, _deathSound, _clickSound;
+        private static Song _bgMusic, _victoryMusic, _gameOverMusic;
 
         public static void LoadContent(ContentManager content)
         {
@@ -18,18 +18,25 @@ namespace FinalProject
             _jumpSound = content.Load<SoundEffect>("jump"); // jump.wav
             _landSound = content.Load<SoundEffect>("land"); // land.wav
             _deathSound = content.Load<SoundEffect>("death"); // death.wav
+            _clickSound = content.Load<SoundEffect>("click"); // click.wav
             _bgMusic = content.Load<Song>("bgmusic"); // bgmusic.mp3
+            _victoryMusic = content.Load<Song>("Victory"); // victory.mp3
+            _gameOverMusic = content.Load<Song>("Game Over"); // gameover.mp3
         }
 
-        public static void PlayHitSound()
+        public static void PlayClickSound( )
         {
-            _hitSound.Play();
+            _clickSound.Play( );
         }
 
-        public static void PlaySwordSwing()
+        public static void PlayHitSound( )
         {
-            Debug.WriteLine("Swing SFX");
-            _swordSwing.Play();
+            _hitSound.Play( );
+        }
+
+        public static void PlaySwordSwing( )
+        {
+            _swordSwing.Play( );
         }
 
         public static void PlayWalkSound( )
@@ -52,7 +59,7 @@ namespace FinalProject
             _deathSound.Play( );
         }
 
-        public static void PlayBackgroundMusic()
+        public static void PlayBackgroundMusic( )
         {
             if (MediaPlayer.State != MediaState.Playing)
             {
@@ -61,10 +68,27 @@ namespace FinalProject
             }
         }
 
-        public static void StopBackgroundMusic()
+        public static void StopMusic( )
         {
             if (MediaPlayer.State == MediaState.Playing)
-                MediaPlayer.Stop();
+            {
+                MediaPlayer.Stop( );
+            }
         }
+
+        public static void PlayVictoryMusic( )
+        {
+            MediaPlayer.Stop( ); 
+            MediaPlayer.IsRepeating = false; // set to true if you want it to loop
+            MediaPlayer.Play(_victoryMusic);
+        }
+
+        public static void PlayGameOverMusic( )
+        {
+            MediaPlayer.Stop( );
+            MediaPlayer.IsRepeating = false; // set to true if you want it to loop
+            MediaPlayer.Play(_gameOverMusic);
+        }
+
     }
 }

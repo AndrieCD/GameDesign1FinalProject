@@ -55,6 +55,7 @@ namespace FinalProject
         /// </summary>
         public override void Update(Sprite[] platforms, GameTime gameTime)
         {
+            base.Update(platforms,gameTime);
             if (_isDead) return;
             if (_health <= 0 && _state != CharState.Dead)
             {
@@ -106,7 +107,7 @@ namespace FinalProject
 
         public void HealOnKill()
         {
-            int healing = 40;
+            int healing = 25;
             _health += healing;
             _health = Math.Clamp(_health, 0, 100); // Ensure health does not exceed 100
         }
@@ -305,6 +306,7 @@ namespace FinalProject
                     return; // Exit if the timer is still active
                 }
                 if (_velocity.X == 0f) return; // Don't play sound if not moving
+                if (!_isGrounded) return;
                 _soundTimer = 0.4f; // Reset the sound timer
                 SoundManager.PlayWalkSound( ); // Play the walk sound
 

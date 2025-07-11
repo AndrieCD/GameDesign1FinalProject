@@ -29,6 +29,8 @@ public class Game1 : Game
     public MenuManager _menuManager;
     public GameState _gameState;
 
+    bool hasPlayedEndMusic;
+
     public Game1( )
     {
         _graphics = new GraphicsDeviceManager(this);
@@ -67,6 +69,7 @@ public class Game1 : Game
         switch (_gameState)
         {
             case GameState.MainMenu:
+                hasPlayedEndMusic = false;
                 SoundManager.PlayBackgroundMusic( ); // Start BGM
                 _menuManager.UpdateMainMenu(gameTime);
                 break;
@@ -82,12 +85,21 @@ public class Game1 : Game
                 break;
 
             case GameState.GameOver:
-                SoundManager.StopBackgroundMusic( );
+                if (!hasPlayedEndMusic)
+                {
+                    SoundManager.PlayGameOverMusic( );
+                    hasPlayedEndMusic = true;
+                }
                 _menuManager.UpdateGameOverMenu(gameTime);
                 break;
 
             case GameState.Victory:
-                SoundManager.StopBackgroundMusic( );
+                if (!hasPlayedEndMusic)
+                {
+                    SoundManager.PlayVictoryMusic( );
+                    hasPlayedEndMusic = true;
+                }
+
                 _menuManager.UpdateVictoryMenu(gameTime);
                 break;
         }

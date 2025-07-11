@@ -61,6 +61,8 @@ namespace FinalProject
         protected const float GRAVITY = 1f;
         protected const float JUMP_POWER = 25f;
 
+        private float startDelay;
+
         // <---- SOUND EFFECTS ---->
         // Hit sound effect (to only play once per hit)
         // nagooverlap kasi siya sa bawat frame if wala this
@@ -70,6 +72,8 @@ namespace FinalProject
         protected Character(Texture2D texture, Rectangle destination, Rectangle source, Color color)
             : base(texture, destination, source, color)
         {
+            startDelay = 4f;
+
             _state = CharState.Idle;
             _previousState = CharState.Idle;
             _velocity = Vector2.Zero;
@@ -91,17 +95,33 @@ namespace FinalProject
         // --- Properties ---
         public Vector2 Velocity => _velocity;
         public int Direction => _direction;
-        public int Health => _health;
+        public int Health
+        {
+            get { return _health; }
+            set { _health = value; }
+        }
         public CharState State => _state;
+        public Point Position
+        {
+            get { return _destination.Location; }
+            set { _destination.Location = value; }
+        }
 
-        public float DeathTimer => _deathTimer;      
-        
+        public float DeathTimer => _deathTimer;
+
         // --- Public Methods ---
 
         /// <summary>
         /// Update character logic. To be overridden by subclasses.
         /// </summary>
-        public virtual void Update(Sprite[] platforms, GameTime gameTime) { }
+        public virtual void Update(Sprite[] platforms, GameTime gameTime)
+        {
+            if (startDelay > 0f)
+            {
+                startDelay -= (float)gameTime.ElapsedGameTime.TotalSeconds;
+                return; // Wait for start delay before processing updates
+            }
+        }
 
         /// <summary>
         /// Called when the character dies. Must be implemented by subclasses.
@@ -182,7 +202,7 @@ namespace FinalProject
             if (!_isGrounded)
                 _velocity.Y += GRAVITY;
 
-            
+
 
             Point newPos = HandleCollisions(platforms);
             newPos.X = Math.Clamp(newPos.X, 0 - OFFSET, SceneManager.SCENEWIDTH - _destination.Width + OFFSET);
@@ -224,9 +244,15 @@ namespace FinalProject
                 {
                     if (tile is Spike)
                     {
+                        // small slow
+                        if (_velocity.X > 0)
+                            _velocity.X = -1f; // slow down
+                        else if (_velocity.X < 0)
+                            _velocity.X = 1f; // slow down
                         _spikeTimer -= 0.01f;
                         if (this is Player && _spikeTimer <= 0)
                         {
+
                             _spikeTimer = 1f; // Reset spike timer to prevent multiple hits
                             SoundManager.PlayHitSound( );
                             TakeDamage(Spike.Damage, true);
@@ -265,7 +291,7 @@ namespace FinalProject
                         newPos.Y = tile.Destination.Top - _destination.Height;
                         _isGrounded = true;
                         _velocity.Y = 0;
-                        
+
                     } else if (_velocity.Y < 0)
                     {
                         newPos.Y = tile.Destination.Bottom;

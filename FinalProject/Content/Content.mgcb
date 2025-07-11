@@ -13,18 +13,6 @@
 
 #---------------------------------- Content ---------------------------------#
 
-#begin ../../../../../Downloads/PAUSE.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:ColorKeyColor=255,0,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=False
-/processorParam:PremultiplyAlpha=True
-/processorParam:ResizeToPowerOfTwo=False
-/processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
-/build:../../../../../Downloads/PAUSE.png;PAUSE.png
-
 #begin BackMain.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -55,11 +43,11 @@
 /processorParam:TextureFormat=Color
 /build:Blocks.png
 
-#begin death.wav
+#begin click.wav
 /importer:WavImporter
 /processor:SoundEffectProcessor
 /processorParam:Quality=Best
-/build:death.wav
+/build:click.wav
 
 #begin ContinueButton.png
 /importer:TextureImporter
@@ -72,6 +60,12 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:ContinueButton.png
+
+#begin death.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:death.wav
 
 #begin EnemySprite.png
 /importer:TextureImporter
@@ -96,6 +90,12 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:ExitButton.png
+
+#begin Game Over.mp3
+/importer:Mp3Importer
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:Game Over.mp3
 
 #begin GameBackground.png
 /importer:TextureImporter
@@ -182,6 +182,18 @@
 /processorParam:TextureFormat=Color
 /build:NewGameButton.png
 
+#begin PAUSE.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:PAUSE.png
+
 #begin PlayerSprites.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -235,6 +247,12 @@
 /processor:SoundEffectProcessor
 /processorParam:Quality=Best
 /build:swordSwing.wav
+
+#begin Victory.mp3
+/importer:Mp3Importer
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:Victory.mp3
 
 #begin walk.wav
 /importer:WavImporter

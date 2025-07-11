@@ -44,7 +44,8 @@ namespace FinalProject
 
             if (isHovering && isClicking && !_wasPreviouslyPressed)
             {
-                OnClick?.Invoke();
+                OnClick.Invoke();
+                SoundManager.PlayClickSound( );
             }
 
             _wasPreviouslyPressed = isClicking;

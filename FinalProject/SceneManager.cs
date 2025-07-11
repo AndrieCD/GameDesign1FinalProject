@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 
 namespace FinalProject
 {
@@ -21,6 +22,7 @@ namespace FinalProject
         public static List<Enemy> Enemies { get; set; }
 
         public static GraphicsDevice graphicsDevice;
+        public static Game1 _game { get; set; }
         public int CurrentLevel => _currentLevel;
 
         public Player Player => _player;
@@ -41,12 +43,14 @@ namespace FinalProject
         private Texture2D platformBlocks, spike;
         private Matrix _cameraTransform;
 
-        private Game1 _game;
+        // --- Checkpoint ---
+        private GameData _latestCheckpoint;
+        private GameData _previousCheckpoint;
+
 
         // --- Constructor ---
-        public SceneManager(Game1 game)
+        public SceneManager( )
         {
-            _game = game;
             Debug.WriteLine($"{SCENEHEIGHT} | {SCENEWIDTH}");
             LoadTextures( );
             InitializePlayer( );
@@ -55,6 +59,18 @@ namespace FinalProject
             _sceneLayout = Level.Layout;
             CreatePlatforms( );
             SpawnEnemies( );
+        }
+
+        public SceneManager(GameData loadedData)
+        {
+            LoadTextures( );
+            LoadPlayer(loadedData.Player);
+            _currentLevel = loadedData.CurrentLevel;
+            _levels = SceneManager.InitializeLevels( );
+            _sceneLayout = Level.Layout;
+            CreatePlatforms( );
+            LoadEnemies(loadedData.Enemies);
+
         }
 
         // --- Scene Setup Methods ---
@@ -72,6 +88,36 @@ namespace FinalProject
             );
         }
 
+        public void LoadEnemies(List<CharData> enemiesData)
+        {
+            Enemies = new List<Enemy>( );
+
+            for (int i = 0; i < enemiesData.Count; i++)
+            {
+                CharData enemyData = enemiesData[i];
+                Point pos = new Point((int)enemyData.X, (int)enemyData.Y);
+                Texture2D enemyTexture = CONTENT.Load<Texture2D>("EnemySprite");
+                Rectangle dest = new Rectangle(pos.X, pos.Y, _spriteWidth * 2, _spriteHeight * 2);
+                Rectangle source = new Rectangle(0, 0, enemyTexture.Width / 4, enemyTexture.Height / 7);
+                Enemies.Add(new Enemy(enemyTexture, dest, source, Color.White, _player));
+                Enemies[i].Health = enemyData.Health;
+            }
+        }
+
+        private void LoadPlayer(CharData playerData)
+        {
+            Texture2D plyrTexture = CONTENT.Load<Texture2D>("PlayerSprites");
+            Rectangle plyrDest = new Rectangle(
+                (int)playerData.X,
+                (int)playerData.Y,
+                _spriteWidth * 2,
+                _spriteHeight * 2
+            );
+            Rectangle plyrSource = new Rectangle(0, 0, plyrTexture.Width / 4, plyrTexture.Height / 7);
+            _player = new Player(graphicsDevice, plyrTexture, plyrDest, plyrSource, Color.White);
+            _player.Health = playerData.Health;
+        }
+
         private void InitializePlayer( )
         {
             Texture2D plyrTexture = CONTENT.Load<Texture2D>("PlayerSprites");
@@ -85,7 +131,7 @@ namespace FinalProject
             _player = new Player(graphicsDevice, plyrTexture, plyrDest, plyrSource, Color.White);
         }
 
-        public static Level[] InitializeLevels( ) => new Level[] { new Level(1), new Level(7) };
+        public static Level[] InitializeLevels( ) => new Level[] { new Level(3), new Level(7) };
 
         public void CreatePlatforms( )
         {
@@ -149,7 +195,7 @@ namespace FinalProject
                 Texture2D enemyTexture = CONTENT.Load<Texture2D>("EnemySprite");
                 Rectangle dest = new Rectangle(pos.X, pos.Y, _spriteWidth * 2, _spriteHeight * 2);
                 Rectangle source = new Rectangle(0, 0, enemyTexture.Width / 4, enemyTexture.Height / 7);
-                Enemies.Add(new Enemy(enemyTexture, dest, source, Color.Gray, _player));
+                Enemies.Add(new Enemy(enemyTexture, dest, source, Color.White, _player));
             }
         }
 
@@ -157,6 +203,36 @@ namespace FinalProject
 
         public void Update(GameTime gameTime)
         {
+            // Checkpoint condition
+            bool healthCheckpoint1 = _player.Health == 100;
+            bool healthCheckpoint2 = _player.Health > 40 && _player.Health < 50;
+
+            if (healthCheckpoint1 || healthCheckpoint2)
+            {
+                if (_previousCheckpoint == null) _previousCheckpoint = _latestCheckpoint;
+
+                // Save current progress to checkpoint
+                _latestCheckpoint = new GameData
+                {
+                    Player = new CharData
+                    {
+                        Health = _player.Health,
+                        X = _player.Position.X,
+                        Y = _player.Position.Y
+                    },
+                    Enemies = Enemies.Select(enemy => new CharData
+                    {
+                        Health = enemy.Health,
+                        X = enemy.Position.X,
+                        Y = enemy.Position.Y
+                    }).ToList( ),
+                    CurrentLevel = _currentLevel
+                };
+                SaveSystem.WriteToFile(_latestCheckpoint);
+            }
+
+
+
             if (_player.IsDead) _game._gameState = GameState.GameOver;
             _player.Update(_platform, gameTime);
 

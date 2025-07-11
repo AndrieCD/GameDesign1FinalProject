@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework;
 using System.Collections.Generic;
 using static FinalProject.UIButton;
+using System.IO;
 
 public class MenuManager
 {
@@ -52,9 +53,6 @@ public class MenuManager
         _exitButtonTexture,
         _game);
 
-        bool saveExists = System.IO.File.Exists("save.xml");
-        _mainMenuButtons[0].IsEnabled = saveExists;
-
         foreach (var btn in _mainMenuButtons)
             btn.Scale = 3f;
 
@@ -83,19 +81,9 @@ public class MenuManager
 
     public void UpdateMainMenu(GameTime gameTime)
     {
-        if (Keyboard.GetState( ).IsKeyDown(Keys.Enter))
-        {
-            // Initialize the SceneManager
-            SceneManager.WINWIDTH = _game.Window.ClientBounds.Width;
-            SceneManager.WINHEIGHT = _game.Window.ClientBounds.Height;
-            SceneManager.SCENEWIDTH = _game.Window.ClientBounds.Width * 2; // entire scene width is double the window width
-            SceneManager.SCENEHEIGHT = _game.Window.ClientBounds.Height * 2; // entire scene height is double the window height
-            SceneManager.CONTENT = _game.Content; // set the content manager for SceneManager
-            SceneManager.graphicsDevice = _game.GraphicsDevice; // set the graphics device for SceneManager
-            _game._sceneManager = new SceneManager(_game); // initialize sprites in SceneManager constructor
+        bool saveExists = File.Exists("save.txt");
+        _mainMenuButtons[0].IsEnabled = saveExists;
 
-            _game._gameState = GameState.Playing;
-        }
         foreach (var button in _mainMenuButtons)
             button.Update();
     }
@@ -114,7 +102,11 @@ public class MenuManager
         {
             backMainCol = Color.Yellow;
             if (mouseState.LeftButton == ButtonState.Pressed)
+            {
+                SoundManager.PlayClickSound( );
+                SoundManager.StopMusic( );
                 _game._gameState = GameState.MainMenu;
+            }
         } else backMainCol = Color.White;
     }
 
@@ -126,7 +118,12 @@ public class MenuManager
         {
             backMainCol = Color.Yellow;
             if (mouseState.LeftButton == ButtonState.Pressed)
+            {
+                SoundManager.PlayClickSound( );
+                File.Delete("save.txt");
+                SoundManager.StopMusic( );
                 _game._gameState = GameState.MainMenu;
+            }
         } else backMainCol = Color.White;
     }
 

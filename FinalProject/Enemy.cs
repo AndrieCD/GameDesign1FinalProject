@@ -3,6 +3,7 @@ using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System.Diagnostics;
+using System.Reflection.Metadata;
 
 namespace FinalProject
 {
@@ -45,6 +46,7 @@ namespace FinalProject
         /// </summary>
         public override void Update(Sprite[] platforms, GameTime gameTime)
         {
+            base.Update(platforms,gameTime);
             if (_isDead) return;
             if (_health <= 0 && _state != CharState.Dead)
             {
@@ -278,5 +280,12 @@ namespace FinalProject
             }
         }
 
+        //public static Enemy CreateEnemyHelper( )
+        //{
+        //    Texture2D enemyTexture = SceneManager.CONTENT.Load<Texture2D>("EnemySprite");
+        //    Rectangle dest = new Rectangle(0,0,0,0);
+        //    Rectangle source = new Rectangle(0, 0, enemyTexture.Width / 4, enemyTexture.Height / 7);
+        //    return new Enemy(enemyTexture, dest, source, Color.Gray, _player);
+        //}
     }
 }
