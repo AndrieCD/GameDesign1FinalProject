@@ -19,6 +19,11 @@ namespace FinalProject
         private Texture2D _healthbarBackground;
         private Texture2D _borderTexture;
 
+        // <---- SOUND EFFECTS ---->
+        // Hit sound effect (to only play once per hit)
+        // nagooverlap kasi siya sa bawat frame if wala this
+        private bool _hitLandedThisAttack = false; // resets to false
+
         // < Constructor > ---------------------------------------
         // This constructor sets up the player with its texture, position, and color.
         // It also creates a HUD (Heads-Up Display) for the player.
@@ -158,15 +163,30 @@ namespace FinalProject
             {
                 Rectangle hitBox = GetCharacterBounds(Destination.Location);
                 hitBox.Location = new Point(hitBox.X + ( hitBox.Width / 2 ) * _direction, hitBox.Y);
-                hitBox.Width = hitBox.Width / 2; 
+                hitBox.Width = hitBox.Width / 2;
+
+                bool hitSomeone = false; // to detect if the enemy is hit
+                
                 foreach (Character enemy in SceneManager.Enemies)
                 {
-                    if (hitBox.Intersects(enemy.Destination))
+                    if (!_hitLandedThisAttack && hitBox.Intersects(enemy.Destination))
                     {
                         enemy.TakeDamage(20);
+                        SoundManager.PlayHitSound(); 
+                        _hitLandedThisAttack = true; // true if attack landed on enemy
+                        hitSomeone = true; // enemy is hit = true
                         break;
                     }
                 }
+
+                // If no enemy was hit, play the sword swing
+                // I added this kasi ung hit.wav may kasama siyang sword swing
+                if (!hitSomeone && !_hitLandedThisAttack)
+                {
+                    SoundManager.PlaySwordSwing();
+                    _hitLandedThisAttack = true; // set to true to not overlap sound effect
+                }
+
                 ChangeState(CharState.Attacking);
             } else
             {
@@ -211,6 +231,7 @@ namespace FinalProject
             _attacking = true;
             _attackTimer = 0.25f;
             _attackCD = 0.5f; // Set cooldown here, only when attack is triggered
+            _hitLandedThisAttack = false; // resets to false on mouse click
             ChangeState(CharState.Attacking);
             Debug.WriteLine("Player is attacking!");
         }
