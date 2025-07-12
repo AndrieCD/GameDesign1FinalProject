@@ -76,6 +76,7 @@ namespace FinalProject
             if (MediaPlayer.State != MediaState.Playing)
             {
                 MediaPlayer.IsRepeating = true;
+                MediaPlayer.Volume = 0.5f;
                 MediaPlayer.Play(_bgMusic);
             }
         }
@@ -92,6 +93,7 @@ namespace FinalProject
         {
             MediaPlayer.Stop( ); 
             MediaPlayer.IsRepeating = false; // set to true if you want it to loop
+            MediaPlayer.Volume = 1f;
             MediaPlayer.Play(_victoryMusic);
         }
 
@@ -99,6 +101,7 @@ namespace FinalProject
         {
             MediaPlayer.Stop( );
             MediaPlayer.IsRepeating = false; // set to true if you want it to loop
+            MediaPlayer.Volume = 1f;
             MediaPlayer.Play(_gameOverMusic);
         }
 
