@@ -9,9 +9,6 @@ using System.Linq;
 
 namespace FinalProject
 {
-    /// <summary>
-    /// Manages the setup, update, and drawing of the game scene, including background, platforms, player, and camera.
-    /// </summary>
     public class SceneManager
     {
         // --- Static Fields (Window/Scene Info) ---
@@ -133,8 +130,8 @@ namespace FinalProject
             _player = new Player(graphicsDevice, plyrTexture, plyrDest, plyrSource, Color.White);
         }
 
-        //public static Level[] InitializeLevels( ) => new Level[] { new Level(3), new Level(7) };
-        public static Level[] InitializeLevels() => new Level[] { new Level(1), new Level(1) };
+        public static Level[] InitializeLevels( ) => new Level[] { new Level(3), new Level(7) };
+        //public static Level[] InitializeLevels() => new Level[] { new Level(1), new Level(1) };
 
         public void CreatePlatforms()
         {
@@ -355,9 +352,6 @@ namespace FinalProject
         }
     }
 
-    /// <summary>
-    /// Level struct holds the layout and enemy count for each level.
-    /// </summary>
     public struct Level
     {
         public const string Layout =
@@ -367,7 +361,7 @@ namespace FinalProject
             "     -----------------------------      " +    // c for static sand
             "                                        " +    // o for heart
             "                                        " +    // x for spikes
-            "                                        " +
+            "o                                       " +
             "----             vvvvvvv            ----" +
             "                    Y                   " +
             "                                        " +
@@ -383,7 +377,7 @@ namespace FinalProject
             "     zzzz     --  ---- --     zzzz      " +
             "                                        " +
             "   Y                                Y   " +
-            "ccc      x         xx         x      ccc" +
+            "ccc      x         xx         x   o  ccc" +
             "cccccccccccccccccccccccccccccccccccccccc";
         public int EnemyCount;
 

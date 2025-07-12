@@ -6,13 +6,9 @@ using System.Diagnostics;
 
 namespace FinalProject
 {
-    /// <summary>
-    /// The Player class represents the main controllable character in the game.
-    /// Inherits from Character, so it gets all movement, collision, and animation logic.
-    /// </summary>
     public class Player : Character
     {
-        private const float SPRINT_MULTIPLIER = 2.5f; // Multiplier for sprinting speed
+        private const float SPRINT_MULTIPLIER = 2.5f; 
 
         // HUD
         private Texture2D _healthbarTexture;
@@ -22,37 +18,29 @@ namespace FinalProject
         private static float _soundTimer = 0f;
 
         // Dash
-        private float _dashCooldown = 3f; // Time before dash can be used again
+        private float _dashCooldown = 3f; 
         private float _dashCooldownTimer = 0f;
-        private float _dashDistance = 50f; // How far the dash moves
-        private float _dashDuration = 0.15f; // Duration of dash in seconds
+        private float _dashDistance = 50f; 
+        private float _dashDuration = 0.15f; 
         private float _dashTimer = 0f;
         private bool _isDashing = false;
         private bool _dashHitLanded = false;
 
-
-        // < Constructor > ---------------------------------------
-        // This constructor sets up the player with its texture, position, and color.
-        // It also creates a HUD (Heads-Up Display) for the player.
         public Player(GraphicsDevice graphicsDevice, Texture2D texture, Rectangle destination, Rectangle source, Color color)
             : base(texture, destination, source, color)
         {
             _health = 100;
             _attackDamage = 20;
-            _healTimer = 3f; // Timer for passive healing every 5 seconds
+            _healTimer = 3f; 
             _healthbarTexture = new Texture2D(graphicsDevice, 1, 1);
-            _healthbarTexture.SetData(new[] { Color.Green }); // Healthbar Color
+            _healthbarTexture.SetData(new[] { Color.Green }); 
             _healthbarBackground = new Texture2D(graphicsDevice, 1, 1);
-            _healthbarBackground.SetData(new[] { Color.SaddleBrown }); // Bg healthbar Color
+            _healthbarBackground.SetData(new[] { Color.SaddleBrown }); 
             _borderTexture = new Texture2D(graphicsDevice, 1, 1);
-            _borderTexture.SetData(new[] { Color.SaddleBrown }); // Border Color
+            _borderTexture.SetData(new[] { Color.SaddleBrown }); 
         }
 
-        // --- Public Methods ---
 
-        /// <summary>
-        /// Updates the player's state, handles input, and manages animation.
-        /// </summary>
         public override void Update(Sprite[] platforms, GameTime gameTime)
         {
             base.Update(platforms, gameTime);
@@ -85,7 +73,7 @@ namespace FinalProject
                 {
                     if (!_dashHitLanded && hitBox.Intersects(enemy.Destination))
                     {
-                        enemy.TakeDamage((int)_attackDamage * 2); // Or use _attackDamage if you want consistent values
+                        enemy.TakeDamage((int)_attackDamage * 2);
                         SoundManager.PlayHitSound();
                         _dashHitLanded = true;
                         break;
@@ -94,12 +82,11 @@ namespace FinalProject
 
                 _dashTimer -= (float)gameTime.ElapsedGameTime.TotalSeconds;
 
-                // Disable dash after time expires
                 if (_dashTimer <= 0f)
                 {
                     _isDashing = false;
                     _velocity.X = 0f;
-                    _dashHitLanded = false; // Reset dash hit detection
+                    _dashHitLanded = false; 
                 }
             }
             if (_dashCooldownTimer < 0f) _dashCooldownTimer = 0f;
@@ -109,14 +96,14 @@ namespace FinalProject
         {
             int healing = 25;
             _health += healing;
-            _health = Math.Clamp(_health, 0, 100); // Ensure health does not exceed 100
+            _health = Math.Clamp(_health, 0, 100);
         }
 
         private void PassiveHeal(GameTime gameTime)
         {
             if (_health < 100 && _health > 0 && !_isDead)
             {
-                _healTimer -= (float)gameTime.ElapsedGameTime.TotalSeconds; // Decrease timer by 1 second
+                _healTimer -= (float)gameTime.ElapsedGameTime.TotalSeconds;
                 if (_healTimer <= 0f)
                 {
                     _health += 10;
@@ -125,11 +112,7 @@ namespace FinalProject
                 }
             }
         }
-
        
-        /// <summary>
-        /// Handles the player's death animation and respawn.
-        /// </summary>
         public override void HandleDeathState(GameTime gameTime)
         {
             _deathTimer -= (float)gameTime.ElapsedGameTime.TotalSeconds;
@@ -141,17 +124,14 @@ namespace FinalProject
 
         public void DrawHUD(SpriteBatch spriteBatch, int currentLevel, int enemyCount)
         {
-            // Fixed screen position (bottom left corner)
             Vector2 hudPosition = new Vector2(35, SceneManager.WINHEIGHT - 50);
 
-            // Health bar background
             int barWidth = 300;
             int barHeight = 30;
             int borderThickness = 5;
 
             Rectangle bgRect = new Rectangle((int)hudPosition.X, (int)hudPosition.Y, barWidth, barHeight);
             Rectangle healthRect = new Rectangle((int)hudPosition.X, (int)hudPosition.Y, (int)(barWidth * (_health / 100f)), barHeight);
-            // _health / 100f = to get the percentage, Multiply that by barWidth to shrink or grow the bar based on health.
 
             // Border rectangles
             Rectangle topBorder = new Rectangle(bgRect.X - borderThickness, bgRect.Y - borderThickness, bgRect.Width + 2 * borderThickness, borderThickness);
@@ -161,48 +141,38 @@ namespace FinalProject
 
             spriteBatch.Begin();
 
-            // Draw border
             spriteBatch.Draw(_borderTexture, topBorder, Color.White);
             spriteBatch.Draw(_borderTexture, bottomBorder, Color.White);
             spriteBatch.Draw(_borderTexture, leftBorder, Color.White);
             spriteBatch.Draw(_borderTexture, rightBorder, Color.White);
 
-            // Draw health bar background and fill
             spriteBatch.Draw(_healthbarBackground, bgRect, Color.White);
             spriteBatch.Draw(_healthbarTexture, healthRect, Color.White);
 
-            // Draw Level Text - top center
             string levelText = $"Level: {currentLevel + 1}";
             Vector2 levelTextSize = Game1.LevelFont.MeasureString(levelText);
 
-            // Centered on top middle of screen
             Vector2 levelTextPos = new Vector2(
-                (SceneManager.WINWIDTH / 2f) - (levelTextSize.X / 2f), // center horizontally
-                15 // slight padding from the top
+                (SceneManager.WINWIDTH / 2f) - (levelTextSize.X / 2f), 
+                15 
             );
             spriteBatch.DrawString(Game1.LevelFont, levelText, levelTextPos, Color.White);
 
-            // Remaining enemies
             string enemyText = $"Enemies Remaining: {enemyCount}";
             Vector2 enemyTextSize = Game1.LevelFont.MeasureString(enemyText);
 
-            // Centered below the level text
             Vector2 enemyTextPos = new Vector2(
-                (SceneManager.WINWIDTH / 2f) - (enemyTextSize.X / 2f), // center horizontally
-                levelTextPos.Y + levelTextSize.Y + 5 // slight padding below level text
+                (SceneManager.WINWIDTH / 2f) - (enemyTextSize.X / 2f), 
+                levelTextPos.Y + levelTextSize.Y + 5
             );
             spriteBatch.DrawString(Game1.LevelFont, enemyText, enemyTextPos, Color.White);
 
             spriteBatch.End();
         }
 
-
-        /// <summary>
-        /// Handles keyboard and mouse input, updates movement and state.
-        /// </summary>
         private void HandleInput(GameTime gameTime)
         {
-            if (_isDashing) return; // Ignore movement input during dash
+            if (_isDashing) return; 
 
             KeyboardState keyboardState = Keyboard.GetState();
             MouseState mouseState = Mouse.GetState();
@@ -233,15 +203,11 @@ namespace FinalProject
         {
             _isDashing = true;
             _dashTimer = _dashDuration;
-            _velocity.X = _direction * _dashDistance; // High velocity for dash
+            _velocity.X = _direction * _dashDistance; 
             _dashCooldownTimer = _dashCooldown;
-            SoundManager.PlaySwordSwing(); // or PlayDashSound if you have one
+            SoundManager.PlaySwordSwing(); 
         }
 
-
-        /// <summary>
-        /// Handles the logic for when the player is attacking.
-        /// </summary>
         public override void HandleAttackState(GameTime gameTime)
         {
             _attackTimer -= (float)gameTime.ElapsedGameTime.TotalSeconds;
@@ -252,7 +218,7 @@ namespace FinalProject
                 hitBox.Location = new Point(hitBox.X + (hitBox.Width / 2) * _direction, hitBox.Y);
                 hitBox.Width = hitBox.Width / 2;
 
-                bool hitSomeone = false; // to detect if the enemy is hit
+                bool hitSomeone = false; 
 
                 foreach (Character enemy in SceneManager.Enemies)
                 {
@@ -260,18 +226,16 @@ namespace FinalProject
                     {
                         enemy.TakeDamage(20);
                         SoundManager.PlayHitSound();
-                        _hitLandedThisAttack = true; // true if attack landed on enemy
-                        hitSomeone = true; // enemy is hit = true
+                        _hitLandedThisAttack = true; 
+                        hitSomeone = true; 
                         break;
                     }
                 }
 
-                // If no enemy was hit, play the sword swing
-                // I added this kasi ung hit.wav may kasama siyang sword swing
                 if (!hitSomeone && !_hitLandedThisAttack)
                 {
                     SoundManager.PlaySwordSwing();
-                    _hitLandedThisAttack = true; // set to true to not overlap sound effect
+                    _hitLandedThisAttack = true; 
                 }
 
                 ChangeState(CharState.Attacking);
@@ -281,8 +245,6 @@ namespace FinalProject
                 _attacking = false;
             }
         }
-
-        // --- Private Input Helpers ---
 
         private void HandleMovementInput(KeyboardState keyboardState)
         {
@@ -306,25 +268,25 @@ namespace FinalProject
                 _velocity.X *= SPRINT_MULTIPLIER;
                 if (_soundTimer > 0f)
                 {
-                    _soundTimer -= 0.025f; // Decrease the timer to prevent spamming the sound
-                    return; // Exit if the timer is still active
+                    _soundTimer -= 0.025f; 
+                    return; 
                 }
-                if (_velocity.X == 0f) return; // Don't play sound if not moving
+                if (_velocity.X == 0f) return;
                 if (!_isGrounded) return;
-                _soundTimer = 0.4f; // Reset the sound timer
-                SoundManager.PlayWalkSound(); // Play the walk sound
+                _soundTimer = 0.4f; 
+                SoundManager.PlayWalkSound(); 
 
             }
             else
             {
                 if (_soundTimer > 0f)
                 {
-                    _soundTimer -= 0.025f; // Decrease the timer to prevent spamming the sound
-                    return; // Exit if the timer is still active
+                    _soundTimer -= 0.025f; 
+                    return; 
                 }
-                if (_velocity.X == 0f) return; // Don't play sound if not moving
-                _soundTimer = 0.7f; // Reset the sound timer
-                SoundManager.PlayWalkSound(); // Play the walk sound
+                if (_velocity.X == 0f) return; 
+                _soundTimer = 0.7f; 
+                SoundManager.PlayWalkSound(); 
             }
         }
 
@@ -342,8 +304,8 @@ namespace FinalProject
         {
             _attacking = true;
             _attackTimer = 0.25f;
-            _attackCD = 0.5f; // Set cooldown here, only when attack is triggered
-            _hitLandedThisAttack = false; // resets to false on mouse click
+            _attackCD = 0.5f; 
+            _hitLandedThisAttack = false; 
             ChangeState(CharState.Attacking);
             Debug.WriteLine("Player is attacking!");
         }

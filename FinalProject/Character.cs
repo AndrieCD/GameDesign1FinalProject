@@ -6,9 +6,6 @@ using System.Diagnostics;
 
 namespace FinalProject
 {
-    /// <summary>
-    /// All possible states a character can be in.
-    /// </summary>
     public enum CharState
     {
         Idle = 1,
@@ -21,10 +18,6 @@ namespace FinalProject
         Attacking = 8
     }
 
-    /// <summary>
-    /// Abstract base class for all characters in the game (players, enemies).
-    /// Handles state, movement, animation, and collision.
-    /// </summary>
     public abstract class Character : Sprite
     {
         // --- State & Movement ---
@@ -109,11 +102,6 @@ namespace FinalProject
 
         public float DeathTimer => _deathTimer;
 
-        // --- Public Methods ---
-
-        /// <summary>
-        /// Update character logic. To be overridden by subclasses.
-        /// </summary>
         public virtual void Update(Sprite[] platforms, GameTime gameTime)
         {
             if (startDelay > 0f)
@@ -122,15 +110,8 @@ namespace FinalProject
                 return; // Wait for start delay before processing updates
             }
         }
-
-        /// <summary>
-        /// Called when the character dies. Must be implemented by subclasses.
-        /// </summary>
         public abstract void HandleDeathState(GameTime gameTime);
 
-        /// <summary>
-        /// Change the character's state and reset animation frame.
-        /// </summary>
         public void ChangeState(CharState newState)
         {
             if (_state == CharState.Dead) return;
@@ -143,9 +124,6 @@ namespace FinalProject
             }
         }
 
-        /// <summary>
-        /// Handles the logic for when the character is hurt.
-        /// </summary>
         public void HandleHurtState(GameTime gameTime)
         {
             _hurtTimer -= (float)gameTime.ElapsedGameTime.TotalSeconds;
@@ -161,10 +139,6 @@ namespace FinalProject
                 ChangeColor(_origColor);
             }
         }
-
-        /// <summary>
-        /// Reduces health and triggers hurt state.
-        /// </summary>
         public virtual void TakeDamage(int damage, bool ignoreIFrames = false)
         {
             if (_health > 0 && (!_isHurt || ignoreIFrames))
@@ -187,9 +161,6 @@ namespace FinalProject
         }
 
 
-        /// <summary>
-        /// Handles the logic for when the character is attacking.
-        /// </summary>
         public virtual void HandleAttackState(GameTime gameTime)
         {
             _attackTimer -= (float)gameTime.ElapsedGameTime.TotalSeconds;
@@ -202,10 +173,6 @@ namespace FinalProject
                 _attacking = false;
             }
         }
-
-        /// <summary>
-        /// Moves the character and checks for collisions with platforms.
-        /// </summary>
         public void ChangePosition(Sprite[] platforms)
         {
             if (_attacking)
@@ -221,11 +188,6 @@ namespace FinalProject
             _destination.Location = newPos;
         }
 
-        // --- Protected/Private Methods ---
-
-        /// <summary>
-        /// Returns a rectangle representing the character's collision area at a given position.
-        /// </summary>
         protected Rectangle GetCharacterBounds(Point newPos)
         {
             return new Rectangle(
@@ -236,9 +198,6 @@ namespace FinalProject
             );
         }
 
-        /// <summary>
-        /// Handles collisions with tiles (like platforms or spikes) and updates the character's position.
-        /// </summary>
         protected Point HandleCollisions(Sprite[] tiles)
         {
             _isGrounded = false;

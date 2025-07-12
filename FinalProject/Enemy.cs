@@ -7,9 +7,6 @@ using System.Reflection.Metadata;
 
 namespace FinalProject
 {
-    /// <summary>
-    /// Represents an enemy character with simple AI (roaming, chasing, attacking).
-    /// </summary>
     public class Enemy : Character
     {
         // --- AI State ---
@@ -39,11 +36,6 @@ namespace FinalProject
             _attackDamage = 20;
         }
 
-        // --- Public Methods ---
-
-        /// <summary>
-        /// Updates the enemy's state, AI, and animation.
-        /// </summary>
         public override void Update(Sprite[] platforms, GameTime gameTime)
         {
             base.Update(platforms,gameTime);
@@ -67,10 +59,6 @@ namespace FinalProject
             _attackCD -= (float)gameTime.ElapsedGameTime.TotalSeconds;
             if (_attackCD < 0f) _attackCD = 0f;
         }
-
-        /// <summary>
-        /// Handles the enemy's death animation and sets IsDead when finished.
-        /// </summary>
         public override void HandleDeathState(GameTime gameTime)
         {
             _deathTimer -= (float)gameTime.ElapsedGameTime.TotalSeconds;
@@ -79,10 +67,6 @@ namespace FinalProject
                 _isDead = true;
             }
         }
-
-        /// <summary>
-        /// Sets the player's position for AI calculations.
-        /// </summary>
         public void SetPlayerPosition(Vector2 pos) => _playerPosition = pos;
 
         // --- AI Logic ---
@@ -91,18 +75,15 @@ namespace FinalProject
         {
             float deltaT = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
-            // Calculate player position relative to the enemy
             float distanceX = Math.Abs(_playerPosition.X - _destination.Center.X);
             float distanceY = Math.Abs(_playerPosition.Y - _destination.Center.Y);
 
-            // --- AI State Decision ---
             if (distanceX < _detectionRange && distanceY < _detectionRange / 2)
             {
                 _aiState = ( distanceX < 60 && distanceY < 60 ) ? EnemyState.Attacking : EnemyState.Chasing;
             } else
                 _aiState = EnemyState.Roaming;
 
-            // --- Behavior Based on AI State ---
             switch (_aiState)
             {
                 case EnemyState.Roaming:
@@ -225,8 +206,6 @@ namespace FinalProject
             }
         }
 
-        // --- Movement/Environment Helpers ---
-
         private void Jump( )
         {
             if (_isGrounded)
@@ -280,12 +259,5 @@ namespace FinalProject
             }
         }
 
-        //public static Enemy CreateEnemyHelper( )
-        //{
-        //    Texture2D enemyTexture = SceneManager.CONTENT.Load<Texture2D>("EnemySprite");
-        //    Rectangle dest = new Rectangle(0,0,0,0);
-        //    Rectangle source = new Rectangle(0, 0, enemyTexture.Width / 4, enemyTexture.Height / 7);
-        //    return new Enemy(enemyTexture, dest, source, Color.Gray, _player);
-        //}
     }
 }
