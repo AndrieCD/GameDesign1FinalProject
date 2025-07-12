@@ -1,7 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
-using SharpDX.Direct3D9;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -45,6 +44,7 @@ namespace FinalProject
         private GameData _latestCheckpoint;
         private GameData _previousCheckpoint;
 
+        private Point _playerSpawnPos;
 
         // --- Constructor ---
         public SceneManager()
@@ -54,9 +54,10 @@ namespace FinalProject
             InitializePlayer();
             _currentLevel = 0;
             _levels = SceneManager.InitializeLevels();
-            _sceneLayout = Level.Layout;
+            _sceneLayout = Level.Layout[_currentLevel];
             CreatePlatforms();
             SpawnEnemies();
+            _playerSpawnPos = _player.Destination.Location;
         }
 
         public SceneManager(GameData loadedData)
@@ -65,10 +66,10 @@ namespace FinalProject
             LoadPlayer(loadedData.Player);
             _currentLevel = loadedData.CurrentLevel;
             _levels = SceneManager.InitializeLevels();
-            _sceneLayout = Level.Layout;
+            _sceneLayout = Level.Layout[_currentLevel];
             CreatePlatforms();
             LoadEnemies(loadedData.Enemies);
-
+            _playerSpawnPos = _player.Destination.Location;
         }
 
         // --- Scene Setup Methods ---
@@ -279,9 +280,10 @@ namespace FinalProject
                 if (_currentLevel + 1 < _levels.Length)
                 {
                     _currentLevel++;
-                    _sceneLayout = Level.Layout;
-                    //CreatePlatforms( );
+                    _sceneLayout = Level.Layout[_currentLevel];
+                    CreatePlatforms( );
                     SpawnEnemies();
+                    _player.Move(_playerSpawnPos);
                 }
                 else
                 {
@@ -354,13 +356,13 @@ namespace FinalProject
 
     public struct Level
     {
-        public const string Layout =
-            "                                        " +    // Y for spawn points
+        public static string[] Layout =
+          { "                                        " +    // Y for spawn points
             "         Y                     Y        " +    // - for thin platforms
             "             xx    o     xx             " +    // z for moving platforms
             "     -----------------------------      " +    // c for static sand
             "                                        " +    // o for heart
-            "                                        " +    // x for spikes
+            "                                    Y   " +    // x for spikes
             "o                                       " +
             "----             vvvvvvv            ----" +
             "                    Y                   " +
@@ -368,7 +370,7 @@ namespace FinalProject
             "                               o        " +
             "      zzz      vv  vv  vv      zzz      " +
             "                                        " +
-            "                                        " +
+            "  Y                                     " +
             "   x                                x   " +
             "------    zzz     vvvvv    zzz    ------" +
             "                                        " +
@@ -377,8 +379,33 @@ namespace FinalProject
             "     zzzz     --  ---- --     zzzz      " +
             "                                        " +
             "   Y                                Y   " +
-            "ccc      x         xx         x   o  ccc" +
-            "cccccccccccccccccccccccccccccccccccccccc";
+            "   x     x         xx         x   o x   " +
+            "cccccccccccccccccccccccccccccccccccccccc",
+
+            "                                        " +    // Y for spawn points
+            "         Y                     Y        " +    // - for thin platforms
+            "             xxo         xx             " +    // z for moving platforms
+            "     --------vvvvvvvvvvvvvv-------      " +    // c for static sand
+            "                                        " +    // o for heart
+            "                 Y                  Y   " +    // x for spikes
+            "  x                    o             x  " +
+            "----             zzzzzzz            ----" +
+            "                    Y                   " +
+            "                                        " +
+            "       o                                " +
+            "      zzz      zz  zz  zz      zzz      " +
+            "                                        " +
+            " Y                                      " +
+            "   x              x   x          o  x   " +
+            "-------------     vvvvv    -------------" +
+            "                                        " +
+            "                                        " +
+            "     x                           x      " +
+            "     vvvv     zz  zzzzz zz     vvvv     " +
+            "                                        " +
+            "   Y                                Y   " +
+            "  x      x         xx         x   o  x  " +
+            "cccccccccccccccccccccccccccccccccccccccc" };
         public int EnemyCount;
 
         public Level(int enemyCount)

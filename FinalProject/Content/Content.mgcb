@@ -121,6 +121,12 @@
 /processorParam:TextureFormat=Color
 /build:GO_1.png
 
+#begin heal.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:heal.wav
+
 #begin heart.png
 /importer:TextureImporter
 /processor:TextureProcessor

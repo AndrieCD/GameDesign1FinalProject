@@ -178,7 +178,7 @@ namespace FinalProject
             if (_attackTimer > 0f)
             {
                 Rectangle hitBox = GetCharacterBounds(_destination.Location);
-                hitBox.Location = new Point(hitBox.X + ( hitBox.Width / 2 ) * _direction, hitBox.Y);
+                hitBox.Location = new Point(hitBox.X + (hitBox.Width + 50) * _direction, hitBox.Y);
                 hitBox.Width = hitBox.Width / 2;
 
                 bool hitSomeone = false; // to detect if the enemy is hit

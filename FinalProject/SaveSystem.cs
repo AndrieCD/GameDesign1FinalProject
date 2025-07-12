@@ -1,10 +1,6 @@
 ﻿using FinalProject;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using SharpDX.Direct2D1;
 using System.IO;
 using System.Xml.Serialization;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 public static class SaveSystem
 {

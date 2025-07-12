@@ -167,6 +167,16 @@ namespace FinalProject
             );
             spriteBatch.DrawString(Game1.LevelFont, enemyText, enemyTextPos, Color.White);
 
+            // HOW TO PLAY
+            string WJump = "W: Jump\n";
+            string AD= "A/D: Move\n";
+            string QDash= "Q: Dash\n";
+            string MB1= "MB1: Attack\n";
+            string HowToPlay = WJump + AD + QDash + MB1;
+            Vector2 HowToPlayPos= new Vector2(25, 15);
+            spriteBatch.DrawString(Game1.LevelFont, HowToPlay, HowToPlayPos, Color.White);
+
+
             spriteBatch.End();
         }
 
@@ -215,7 +225,7 @@ namespace FinalProject
             if (_attackTimer > 0f)
             {
                 Rectangle hitBox = GetCharacterBounds(Destination.Location);
-                hitBox.Location = new Point(hitBox.X + (hitBox.Width / 2) * _direction, hitBox.Y);
+                hitBox.Location = new Point(hitBox.X + (hitBox.Width+50 ) * _direction, hitBox.Y);
                 hitBox.Width = hitBox.Width / 2;
 
                 bool hitSomeone = false; 
@@ -334,6 +344,12 @@ namespace FinalProject
                         ChangeState(CharState.Falling);
                 }
             }
+        }
+
+        public void Move(Point pos)
+        {
+            _destination.X = pos.X;
+            _destination.Y = pos.Y;
         }
     }
 }

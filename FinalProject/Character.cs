@@ -153,6 +153,7 @@ namespace FinalProject
 
         public void Heal(int healAMount)
         {
+            SoundManager.PlayHealSound();
             if (_health < 100 && _health > 0 && !_isDead)
             {
                 _health += healAMount;

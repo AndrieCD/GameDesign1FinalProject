@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using FinalProject;
+using System.Collections.Generic;
 
 public class GameData
 {
