@@ -194,6 +194,12 @@
 /processorParam:TextureFormat=Color
 /build:PAUSE.png
 
+#begin pauseSound.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:pauseSound.wav
+
 #begin PlayerSprites.png
 /importer:TextureImporter
 /processor:TextureProcessor

@@ -76,7 +76,10 @@ public class Game1 : Game
 
             case GameState.Playing:
                 if (ks.IsKeyDown(Keys.Escape))
+                {
+                    SoundManager.PlayPauseSound();
                     _gameState = GameState.Paused;
+                }
                 _sceneManager.Update(gameTime);
                 break;
 
