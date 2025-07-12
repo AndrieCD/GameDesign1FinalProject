@@ -7,7 +7,7 @@ namespace FinalProject
 {
     public static class SoundManager
     {
-        private static SoundEffect _hitSound, _swordSwing, _walkSound, _jumpSound, _landSound, _deathSound, _clickSound;
+        private static SoundEffect _hitSound, _swordSwing, _walkSound, _jumpSound, _landSound, _deathSound, _clickSound, _pauseSound;
         private static Song _bgMusic, _victoryMusic, _gameOverMusic;
 
         public static void LoadContent(ContentManager content)
@@ -22,6 +22,12 @@ namespace FinalProject
             _bgMusic = content.Load<Song>("bgmusic"); // bgmusic.mp3
             _victoryMusic = content.Load<Song>("Victory"); // victory.mp3
             _gameOverMusic = content.Load<Song>("Game Over"); // gameover.mp3
+            _pauseSound = content.Load<SoundEffect>("pauseSound"); //pause.wav
+        }
+
+        public static void PlayPauseSound()
+        {
+            _pauseSound.Play();
         }
 
         public static void PlayClickSound( )
