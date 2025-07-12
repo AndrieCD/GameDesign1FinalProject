@@ -28,6 +28,9 @@ public class MenuManager
 
     Texture2D _pauseMenu;
 
+    float _endTimer = 0;
+    bool _backClickable = false;
+
 
     public MenuManager(Game1 game)
     {
@@ -96,35 +99,53 @@ public class MenuManager
 
     public void UpdateGameOverMenu(GameTime gameTime)
     {
-        MouseState mouseState = Mouse.GetState( );
+        if (!_backClickable && _endTimer == 0) _endTimer = 1f;
+        if (_endTimer > 0f)
+        {
+            _backClickable = true;
+            _endTimer -= (float)gameTime.ElapsedGameTime.TotalSeconds;
+            return;
+        }
+
+            MouseState mouseState = Mouse.GetState();
 
         if (new Rectangle(SceneManager.WINWIDTH / 4, SceneManager.WINHEIGHT - 250, 550, 80).Contains(mouseState.Position))
         {
             backMainCol = Color.Yellow;
             if (mouseState.LeftButton == ButtonState.Pressed)
             {
-                SoundManager.PlayClickSound( );
-                SoundManager.StopMusic( );
+                SoundManager.PlayClickSound();
+                SoundManager.StopMusic();
                 _game._gameState = GameState.MainMenu;
             }
-        } else backMainCol = Color.White;
+        }
+        else backMainCol = Color.White;
     }
 
     public void UpdateVictoryMenu(GameTime gameTime)
     {
-        MouseState mouseState = Mouse.GetState( );
+        if (!_backClickable && _endTimer == 0) _endTimer = 1f;
+        if (_endTimer > 0f)
+        {
+            _backClickable = true;
+            _endTimer -= (float)gameTime.ElapsedGameTime.TotalSeconds;
+            return;
+        }
+
+        MouseState mouseState = Mouse.GetState();
 
         if (new Rectangle(SceneManager.WINWIDTH / 4, SceneManager.WINHEIGHT - 250, 550, 80).Contains(mouseState.Position))
         {
             backMainCol = Color.Yellow;
             if (mouseState.LeftButton == ButtonState.Pressed)
             {
-                SoundManager.PlayClickSound( );
+                SoundManager.PlayClickSound();
                 File.Delete("save.txt");
-                SoundManager.StopMusic( );
+                SoundManager.StopMusic();
                 _game._gameState = GameState.MainMenu;
             }
-        } else backMainCol = Color.White;
+        }
+        else backMainCol = Color.White;
     }
 
     public void DrawMainMenu(SpriteBatch sb)
@@ -134,7 +155,7 @@ public class MenuManager
         // Draw background
         sb.Draw(_menuBg, new Rectangle(0, 0, _game.Window.ClientBounds.Width, _game.Window.ClientBounds.Height), Color.White);
 
-        float logoScale = 5.5f;
+        float logoScale = 1.5f;
         int logoX = 30;
         int logoY = -90;
         int logoWidth = (int)(_logTexture.Width * logoScale);
@@ -179,17 +200,17 @@ public class MenuManager
 
     public void DrawGameOverMenu(SpriteBatch sb)
     {
-        sb.Begin( );
+        sb.Begin();
         sb.Draw(_gameOverBg, new Rectangle(0, 0, _game.Window.ClientBounds.Width, _game.Window.ClientBounds.Height), Color.White);
         sb.Draw(backMainTex, new Rectangle(SceneManager.WINWIDTH / 4, SceneManager.WINHEIGHT - 250, 550, 80), backMainCol);
-        sb.End( );
+        sb.End();
     }
 
     public void DrawVictoryMenu(SpriteBatch sb)
     {
-        sb.Begin( );
+        sb.Begin();
         sb.Draw(_victoryBg, new Rectangle(0, 0, _game.Window.ClientBounds.Width, _game.Window.ClientBounds.Height), Color.White);
         sb.Draw(backMainTex, new Rectangle(SceneManager.WINWIDTH / 4, SceneManager.WINHEIGHT - 250, 550, 80), backMainCol);
-        sb.End( );
+        sb.End();
     }
 }

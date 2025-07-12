@@ -84,7 +84,7 @@ namespace FinalProject
                 bgTexture,
                 new Rectangle(0, 0, SCENEWIDTH, SCENEHEIGHT),
                 new Rectangle(0, 0, bgTexture.Width, bgTexture.Height),
-                Color.White
+                Color.LightGray
             );
         }
 
@@ -131,7 +131,8 @@ namespace FinalProject
             _player = new Player(graphicsDevice, plyrTexture, plyrDest, plyrSource, Color.White);
         }
 
-        public static Level[] InitializeLevels( ) => new Level[] { new Level(3), new Level(7) };
+        //public static Level[] InitializeLevels( ) => new Level[] { new Level(3), new Level(7) };
+        public static Level[] InitializeLevels( ) => new Level[] { new Level(1), new Level(1) };
 
         public void CreatePlatforms( )
         {
@@ -148,7 +149,7 @@ namespace FinalProject
                     case '-':
                     case 'z':
                         sourceRectangle = new Rectangle(platformBlocks.Width / 4 * 0, 0, platformBlocks.Width / 4, platformBlocks.Height / 3);
-                        _platform[i] = new Sprite(platformBlocks, new Rectangle(x, y, _spriteWidth, _spriteHeight / 4), sourceRectangle, Color.White);
+                        _platform[i] = new Sprite(platformBlocks, new Rectangle(x, y, _spriteWidth, _spriteHeight / 2), sourceRectangle, Color.White);
                         break;
                     case 'c':
                         sourceRectangle = new Rectangle(platformBlocks.Width / 4 * 2, 0, platformBlocks.Width / 4, platformBlocks.Height);
