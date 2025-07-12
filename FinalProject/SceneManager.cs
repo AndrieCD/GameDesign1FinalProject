@@ -57,7 +57,7 @@ namespace FinalProject
             _sceneLayout = Level.Layout[_currentLevel];
             CreatePlatforms();
             SpawnEnemies();
-            _playerSpawnPos = _player.Destination.Location;
+            //_playerSpawnPos = new Point;
         }
 
         public SceneManager(GameData loadedData)
@@ -69,7 +69,7 @@ namespace FinalProject
             _sceneLayout = Level.Layout[_currentLevel];
             CreatePlatforms();
             LoadEnemies(loadedData.Enemies);
-            _playerSpawnPos = _player.Destination.Location;
+            //_playerSpawnPos = _player.Destination.Location;
         }
 
         // --- Scene Setup Methods ---
@@ -283,7 +283,8 @@ namespace FinalProject
                     _sceneLayout = Level.Layout[_currentLevel];
                     CreatePlatforms( );
                     SpawnEnemies();
-                    _player.Move(_playerSpawnPos);
+                    _player.Move(_playerSpawnPos = new Point(_spriteWidth * 20,
+                SCENEHEIGHT - (_spriteHeight * 10)));
                 }
                 else
                 {
