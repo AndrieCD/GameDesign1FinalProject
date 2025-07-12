@@ -55,13 +55,13 @@ namespace FinalProject
         /// </summary>
         public override void Update(Sprite[] platforms, GameTime gameTime)
         {
-            base.Update(platforms,gameTime);
+            base.Update(platforms, gameTime);
             if (_isDead) return;
             if (_health <= 0 && _state != CharState.Dead)
             {
                 _deathTimer = 0.75f;
                 ChangeState(CharState.Dead);
-                SoundManager.PlayDeathSound( );
+                SoundManager.PlayDeathSound();
             }
             HandleDeathState(gameTime);
             PassiveHeal(gameTime);
@@ -78,15 +78,15 @@ namespace FinalProject
             {
                 // Check hitbox during dash
                 Rectangle hitBox = GetCharacterBounds(Destination.Location);
-                hitBox.Location = new Point(hitBox.X + ( hitBox.Width / 2 ) * _direction, hitBox.Y);
+                hitBox.Location = new Point(hitBox.X + (hitBox.Width / 2) * _direction, hitBox.Y);
                 hitBox.Width = hitBox.Width / 2;
 
                 foreach (Character enemy in SceneManager.Enemies)
                 {
                     if (!_dashHitLanded && hitBox.Intersects(enemy.Destination))
                     {
-                        enemy.TakeDamage((int)_attackDamage*2); // Or use _attackDamage if you want consistent values
-                        SoundManager.PlayHitSound( );
+                        enemy.TakeDamage((int)_attackDamage * 2); // Or use _attackDamage if you want consistent values
+                        SoundManager.PlayHitSound();
                         _dashHitLanded = true;
                         break;
                     }
@@ -121,11 +121,12 @@ namespace FinalProject
                 {
                     _health += 10;
                     _health = Math.Clamp(_health, 0, 100);
-                    _healTimer = 4f; 
+                    _healTimer = 4f;
                 }
             }
         }
 
+       
         /// <summary>
         /// Handles the player's death animation and respawn.
         /// </summary>
@@ -171,7 +172,7 @@ namespace FinalProject
             spriteBatch.Draw(_healthbarTexture, healthRect, Color.White);
 
             // Draw Level Text - top center
-            string levelText = $"Level: {currentLevel+1}";
+            string levelText = $"Level: {currentLevel + 1}";
             Vector2 levelTextSize = Game1.LevelFont.MeasureString(levelText);
 
             // Centered on top middle of screen
@@ -187,14 +188,14 @@ namespace FinalProject
 
             // Centered below the level text
             Vector2 enemyTextPos = new Vector2(
-                ( SceneManager.WINWIDTH / 2f ) - ( enemyTextSize.X / 2f ), // center horizontally
+                (SceneManager.WINWIDTH / 2f) - (enemyTextSize.X / 2f), // center horizontally
                 levelTextPos.Y + levelTextSize.Y + 5 // slight padding below level text
             );
             spriteBatch.DrawString(Game1.LevelFont, enemyText, enemyTextPos, Color.White);
 
             spriteBatch.End();
         }
-           
+
 
         /// <summary>
         /// Handles keyboard and mouse input, updates movement and state.
@@ -203,8 +204,8 @@ namespace FinalProject
         {
             if (_isDashing) return; // Ignore movement input during dash
 
-            KeyboardState keyboardState = Keyboard.GetState( );
-            MouseState mouseState = Mouse.GetState( );
+            KeyboardState keyboardState = Keyboard.GetState();
+            MouseState mouseState = Mouse.GetState();
 
             if (!_attacking && _health > 0)
             {
@@ -219,7 +220,7 @@ namespace FinalProject
 
             if (_health > 0 && keyboardState.IsKeyDown(Keys.Q) && _dashCooldownTimer <= 0f)
             {
-                PerformDash( );
+                PerformDash();
             }
 
 
@@ -228,13 +229,13 @@ namespace FinalProject
             if (_attackCD < 0f) _attackCD = 0f;
         }
 
-        private void PerformDash( )
+        private void PerformDash()
         {
             _isDashing = true;
             _dashTimer = _dashDuration;
             _velocity.X = _direction * _dashDistance; // High velocity for dash
             _dashCooldownTimer = _dashCooldown;
-            SoundManager.PlaySwordSwing( ); // or PlayDashSound if you have one
+            SoundManager.PlaySwordSwing(); // or PlayDashSound if you have one
         }
 
 
@@ -248,17 +249,17 @@ namespace FinalProject
             if (_attackTimer > 0f)
             {
                 Rectangle hitBox = GetCharacterBounds(Destination.Location);
-                hitBox.Location = new Point(hitBox.X + ( hitBox.Width / 2 ) * _direction, hitBox.Y);
+                hitBox.Location = new Point(hitBox.X + (hitBox.Width / 2) * _direction, hitBox.Y);
                 hitBox.Width = hitBox.Width / 2;
 
                 bool hitSomeone = false; // to detect if the enemy is hit
-                
+
                 foreach (Character enemy in SceneManager.Enemies)
                 {
                     if (!_hitLandedThisAttack && hitBox.Intersects(enemy.Destination))
                     {
                         enemy.TakeDamage(20);
-                        SoundManager.PlayHitSound(); 
+                        SoundManager.PlayHitSound();
                         _hitLandedThisAttack = true; // true if attack landed on enemy
                         hitSomeone = true; // enemy is hit = true
                         break;
@@ -274,7 +275,8 @@ namespace FinalProject
                 }
 
                 ChangeState(CharState.Attacking);
-            } else
+            }
+            else
             {
                 _attacking = false;
             }
@@ -288,11 +290,13 @@ namespace FinalProject
             {
                 _velocity.X = -SPEED;
                 _direction = -1;
-            } else if (keyboardState.IsKeyDown(Keys.D))
+            }
+            else if (keyboardState.IsKeyDown(Keys.D))
             {
                 _velocity.X = SPEED;
                 _direction = 1;
-            } else
+            }
+            else
             {
                 _velocity.X = 0f;
             }
@@ -308,9 +312,10 @@ namespace FinalProject
                 if (_velocity.X == 0f) return; // Don't play sound if not moving
                 if (!_isGrounded) return;
                 _soundTimer = 0.4f; // Reset the sound timer
-                SoundManager.PlayWalkSound( ); // Play the walk sound
+                SoundManager.PlayWalkSound(); // Play the walk sound
 
-            } else
+            }
+            else
             {
                 if (_soundTimer > 0f)
                 {
@@ -319,17 +324,17 @@ namespace FinalProject
                 }
                 if (_velocity.X == 0f) return; // Don't play sound if not moving
                 _soundTimer = 0.7f; // Reset the sound timer
-                SoundManager.PlayWalkSound( ); // Play the walk sound
+                SoundManager.PlayWalkSound(); // Play the walk sound
             }
         }
 
         private void HandleJumpInput(KeyboardState keyboardState)
         {
-            if (( keyboardState.IsKeyDown(Keys.Space) || keyboardState.IsKeyDown(Keys.W) ) && _isGrounded)
+            if ((keyboardState.IsKeyDown(Keys.Space) || keyboardState.IsKeyDown(Keys.W)) && _isGrounded)
             {
                 _velocity.Y = -JUMP_POWER;
                 _isGrounded = false;
-                SoundManager.PlayJumpSound( );
+                SoundManager.PlayJumpSound();
             }
         }
 
@@ -353,11 +358,13 @@ namespace FinalProject
                     if (_velocity.X == 0f)
                     {
                         ChangeState(CharState.Idle);
-                    } else
+                    }
+                    else
                     {
                         ChangeState(keyboardState.IsKeyDown(Keys.LeftShift) ? CharState.Sprinting : CharState.Walking);
                     }
-                } else
+                }
+                else
                 {
                     if (_velocity.Y < 0f)
                         ChangeState(CharState.Jumping);

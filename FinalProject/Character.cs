@@ -154,7 +154,8 @@ namespace FinalProject
                 if (!_attacking)
                     ChangeState(CharState.Hurt);
                 ChangeColor(Color.Red);
-            } else
+            }
+            else
             {
                 _isHurt = false;
                 ChangeColor(_origColor);
@@ -166,7 +167,7 @@ namespace FinalProject
         /// </summary>
         public virtual void TakeDamage(int damage, bool ignoreIFrames = false)
         {
-            if (_health > 0 && ( !_isHurt || ignoreIFrames ))
+            if (_health > 0 && (!_isHurt || ignoreIFrames))
             {
                 _health -= damage;
                 _isHurt = true;
@@ -175,6 +176,16 @@ namespace FinalProject
                 Debug.WriteLine($"Took {damage} damage! Remaining health: {_health}");
             }
         }
+
+        public void Heal(int healAMount)
+        {
+            if (_health < 100 && _health > 0 && !_isDead)
+            {
+                _health += healAMount;
+                _health = Math.Clamp(_health, 0, 100);
+            }
+        }
+
 
         /// <summary>
         /// Handles the logic for when the character is attacking.
@@ -185,7 +196,8 @@ namespace FinalProject
             if (_attackTimer > 0f)
             {
                 ChangeState(CharState.Attacking);
-            } else
+            }
+            else
             {
                 _attacking = false;
             }
@@ -219,7 +231,7 @@ namespace FinalProject
             return new Rectangle(
                 newPos.X + OFFSET,
                 newPos.Y + OFFSET,
-                _destination.Width - ( 2 * OFFSET ),
+                _destination.Width - (2 * OFFSET),
                 _destination.Height - OFFSET
             );
         }
@@ -252,13 +264,21 @@ namespace FinalProject
                         _spikeTimer -= 0.01f;
                         if (this is Player && _spikeTimer <= 0)
                         {
-
                             _spikeTimer = 1f; // Reset spike timer to prevent multiple hits
-                            SoundManager.PlayHitSound( );
+                            SoundManager.PlayHitSound();
                             TakeDamage(Spike.Damage, true);
                         }
                         continue;
                     }
+                    if (tile is Heart)
+                    {
+                        Heart heart = (Heart)tile;
+                        if (heart.Collected) continue;
+                        heart.Collected = true;
+                        Heal(Heart.Heal);
+                        continue;
+                    }
+
                     if (_velocity.X > 0)
                         newPos.X = tile.Destination.Left - _destination.Width + OFFSET;
                     else if (_velocity.X < 0)
@@ -277,22 +297,40 @@ namespace FinalProject
                 {
                     if (tile is Spike)
                     {
+                        // small slow
+                        if (_velocity.X > 0)
+                            _velocity.X = -1f; // slow down
+                        else if (_velocity.X < 0)
+                            _velocity.X = 1f; // slow down
                         _spikeTimer -= 0.01f;
                         if (this is Player && _spikeTimer <= 0)
                         {
+
                             _spikeTimer = 1f; // Reset spike timer to prevent multiple hits
-                            SoundManager.PlayHitSound( );
+                            SoundManager.PlayHitSound();
                             TakeDamage(Spike.Damage, true);
                         }
                         continue;
                     }
+                    if (tile is Heart)
+                    {
+                        Heart heart = (Heart)tile;
+                        if (heart.Collected) continue;
+                        heart.Collected = true;
+                        Heal(Heart.Heal);
+                        continue;
+                    }
+
+
+
                     if (_velocity.Y > 0)
                     {
                         newPos.Y = tile.Destination.Top - _destination.Height;
                         _isGrounded = true;
                         _velocity.Y = 0;
 
-                    } else if (_velocity.Y < 0)
+                    }
+                    else if (_velocity.Y < 0)
                     {
                         newPos.Y = tile.Destination.Bottom;
                         _velocity.Y = 0;
@@ -347,10 +385,10 @@ namespace FinalProject
             if (frameCounter > speed)
             {
                 int totalFrames = endFrame - startFrame + 1;
-                int currentIndex = ( frameCounter / speed ) % totalFrames;
+                int currentIndex = (frameCounter / speed) % totalFrames;
                 int frameNumber = startFrame + currentIndex;
-                int frameX = ( frameNumber % framesPerRow ) * _frameWidth;
-                int frameY = ( frameNumber / framesPerRow ) * _frameHeight;
+                int frameX = (frameNumber % framesPerRow) * _frameWidth;
+                int frameY = (frameNumber / framesPerRow) * _frameHeight;
                 _source = new Rectangle(new Point(frameX, frameY), new Point(_frameWidth, _frameHeight));
             }
             frameCounter++;

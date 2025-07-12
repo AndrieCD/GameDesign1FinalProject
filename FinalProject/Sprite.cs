@@ -72,4 +72,41 @@ namespace FinalProject
         public static int Damage => DAMAGE;
     }
 
+    public class Heart : Sprite
+    {
+        private int frameCounter;
+        private const int HEAL = 30;
+        private bool collected = false;
+        public Heart(Texture2D texture, Rectangle destination, Rectangle source, Color color)
+            : base(texture, destination, source, color)
+        {
+            frameCounter = 0;
+        }
+
+        public static int Heal => HEAL;
+        public bool Collected
+        {
+            get => collected; set => collected = value;
+        }
+
+        public void Animate()
+        {
+
+            int framesPerRow = 4;
+            int startFrame = 0, endFrame =3;
+            int speed = 7;
+
+            if (frameCounter > speed)
+            {
+                int totalFrames = endFrame - startFrame + 1;
+                int currentIndex = (frameCounter / speed) % totalFrames;
+                int frameNumber = startFrame + currentIndex;
+                int frameX = (frameNumber % framesPerRow) * _texture.Width/4;
+                int frameY = (frameNumber / framesPerRow) * _texture.Height;
+                _source = new Rectangle(new Point(frameX, frameY), new Point(_texture.Width/4, _texture.Height));
+            }
+            frameCounter++;
+        }
+    }
+
 }
